@@ -1,0 +1,56 @@
+{
+  "root": true,
+  "plugins": [
+    "import",
+    "jest",
+    "prettier",
+    "eslint-plugin-import",
+    "@typescript-eslint"
+  ],
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest/globals": true
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
+  },
+  "extends": [
+    "prettier", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"
+  ],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2020,
+    "requireConfigFile": false,
+    "project": "./tsconfig.json"
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/.history/**",
+    "**/dist/**",
+    "**/generated"
+  ],
+  "rules": {
+    "prettier/prettier": "warn",
+    "max-classes-per-file": "off",
+    "no-underscore-dangle": [
+      "error", { "allow": [
+        "__brand"
+      ] }],
+    "no-debugger": "error",
+    "no-unused-expressions": "error",
+    "no-param-reassign": "error",
+    "no-mixed-operators": "off",
+    "no-plusplus": "off",
+    "import/no-extraneous-dependencies": "off",
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "no-console": "error",
+    "react/no-unescaped-entities": "off",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-explicit-any": "error"
+  }
+}
