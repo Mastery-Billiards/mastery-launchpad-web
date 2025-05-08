@@ -1,8 +1,5 @@
-import React from 'react'
-import { Button } from 'antd'
-// import Image from 'next/image'
-// import styles from './page.module.css'
+import { Stack } from '@mui/material'
 
 export default function Home() {
-  return <Button type="primary">Button</Button>
+  return <Stack>aaaa</Stack>
 }
