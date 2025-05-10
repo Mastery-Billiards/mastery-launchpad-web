@@ -1,102 +1,151 @@
+'use client'
 import React from 'react'
 import { Stack, TextField, Button, Typography, Divider } from '@mui/material'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function Page() {
+  const router = useRouter()
   return (
-    <Stack
-      spacing={{ xs: 2, md: 4 }}
-      alignItems="center"
-      justifyContent="center"
-      height="calc(100vh - 144px)"
-    >
+    <>
       <Stack
-        bgcolor="#FFFFFF"
-        boxShadow="0 0 0 1px rgba(0,0,0,.04),0 4px 16px -4px rgba(0,0,0,.16)"
-        borderRadius="8px"
-        width={{ xs: '100%', md: 500 }}
-        spacing={2.5}
-        py={3}
-        divider={<Divider sx={{ borderStyle: 'dashed' }} />}
+        width={40}
+        height={40}
+        alignItems="center"
+        justifyContent="center"
+        borderRadius="50%"
+        sx={{
+          cursor: 'pointer',
+          transition: 'transform .3s ease',
+          '&:hover': {
+            transform: 'scale(1.1)',
+          },
+        }}
+        onClick={() => router.push('/')}
+        position="absolute"
       >
-        <Stack px={3} spacing={2.5}>
-          <Typography textAlign="center" fontSize={24}>
-            Thông tin khách
-          </Typography>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <TextField
-              fullWidth
-              size="small"
-              variant="standard"
-              label="Số điện thoại"
-            />
-            <Button variant="outlined">Tìm</Button>
-          </Stack>
-          <Stack
-            border="1px solid #A3A7A9"
-            borderRadius="4px"
-            p={2}
-            spacing={1}
-          >
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Typography>Họ và tên:</Typography>
-              <Typography>ABC</Typography>
+        <ArrowBackIosIcon />
+      </Stack>
+      <Stack
+        spacing={{ xs: 2, md: 4 }}
+        alignItems="center"
+        justifyContent="center"
+        height="calc(100vh - 144px)"
+      >
+        <Stack
+          position="relative"
+          bgcolor="#FFFFFF"
+          boxShadow="0 0 0 1px rgba(0,0,0,.04),0 4px 16px -4px rgba(0,0,0,.16)"
+          borderRadius="8px"
+          width={{ xs: '100%', md: 500 }}
+          spacing={2.5}
+          py={3}
+          divider={<Divider sx={{ borderStyle: 'dashed' }} />}
+        >
+          <Stack px={3} spacing={2.5}>
+            <Typography textAlign="center" fontSize={24}>
+              Thông tin khách
+            </Typography>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <TextField
+                fullWidth
+                size="small"
+                variant="standard"
+                label="SỐ ĐIỆN THOẠI"
+              />
+              <Button variant="outlined" size="large">
+                OK
+              </Button>
             </Stack>
             <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              border="1px solid #A3A7A9"
+              borderRadius="4px"
+              p={1}
+              spacing={1}
             >
-              <Typography>Số điện thoại:</Typography>
-              <Typography>ABC</Typography>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Họ và tên:</Typography>
+                <Typography>XXXXXXXXXXXXXXX</Typography>
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Số điện thoại:</Typography>
+                <Typography>XXXXXXXXXXXXXXX</Typography>
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Ngày sinh:</Typography>
+                <Typography>XX/XX/XXX</Typography>
+              </Stack>
             </Stack>
           </Stack>
-        </Stack>
-        <Stack px={3} spacing={2.5}>
-          <Typography textAlign="center" fontSize={24}>
-            Thông tin thẻ
-          </Typography>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <TextField
-              fullWidth
-              size="small"
-              variant="standard"
-              label="Mã thẻ"
-            />
-            <Button variant="outlined">Tìm</Button>
-          </Stack>
-          <Stack
-            border="1px solid #A3A7A9"
-            borderRadius="4px"
-            p={2}
-            spacing={1}
-          >
+          <Stack px={3} spacing={2.5}>
+            <Typography textAlign="center" fontSize={24}>
+              Thông tin thẻ
+            </Typography>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <TextField
+                fullWidth
+                size="small"
+                variant="standard"
+                label="QUÉT MÃ BARCODE"
+              />
+              <Button variant="outlined" size="large">
+                OK
+              </Button>
+            </Stack>
             <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              border="1px solid #A3A7A9"
+              borderRadius="4px"
+              p={1}
+              spacing={1.5}
             >
-              <Typography>Họ và tên:</Typography>
-              <Typography>ABC</Typography>
-            </Stack>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Typography>Số điện thoại:</Typography>
-              <Typography>ABC</Typography>
+              <Stack spacing={1}>
+                <Stack
+                  position="relative"
+                  width="100%"
+                  height={{ xs: 150, md: 220 }}
+                >
+                  <Image src="/platium.png" alt="platium" fill />
+                </Stack>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Typography>Mã thẻ:</Typography>
+                  <Typography>XXXXXXXXXXXXXXXXX</Typography>
+                </Stack>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Typography>Hạng thẻ:</Typography>
+                  <Typography>Platium</Typography>
+                </Stack>
+              </Stack>
             </Stack>
           </Stack>
-        </Stack>
-        <Stack px={3} direction="row" alignItems="center" spacing={2}>
-          <TextField fullWidth size="small" variant="standard" label="OTP" />
-          <Button variant="outlined">Submit</Button>
+          <Stack px={3} direction="row" alignItems="center" spacing={2}>
+            <TextField fullWidth size="small" variant="standard" label="OTP" />
+            <Button variant="outlined" size="large">
+              Submit
+            </Button>
+          </Stack>
         </Stack>
       </Stack>
-    </Stack>
+    </>
   )
 }

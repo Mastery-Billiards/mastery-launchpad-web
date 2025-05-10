@@ -11,7 +11,7 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
   // const isMobile = useResponsiveValue({ xs: true, md: false })
   return (
     <Stack>
-      <AppBar position="static" sx={{ bgcolor: '#000' }}>
+      <AppBar position="static" sx={{ bgcolor: '#212121' }}>
         <Toolbar>
           <Stack
             width="100%"

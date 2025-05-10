@@ -28,11 +28,7 @@ export default function Home() {
         >
           <AddCardIcon sx={{ fontSize: { xs: 24, md: 80 }, color: 'white' }} />
         </Stack>
-        <Typography
-          color="white"
-          fontWeight={400}
-          fontSize={{ xs: 14, md: 18 }}
-        >
+        <Typography fontWeight={400} fontSize={{ xs: 14, md: 18 }}>
           Phát Hành Thẻ
         </Typography>
       </Stack>
@@ -56,11 +52,7 @@ export default function Home() {
         >
           <Image src="/phat-hanh-the.png" alt="phat-hanh-the" fill />
         </Stack>
-        <Typography
-          color="white"
-          fontWeight={400}
-          fontSize={{ xs: 14, md: 18 }}
-        >
+        <Typography fontWeight={400} fontSize={{ xs: 14, md: 18 }}>
           Phát Hành Thẻ
         </Typography>
       </Stack>
