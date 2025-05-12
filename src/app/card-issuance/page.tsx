@@ -68,17 +68,14 @@ export default function Page() {
         <ArrowBackIosIcon />
       </Stack>
       <Stack
+        py={4}
         spacing={{ xs: 2, md: 4 }}
         alignItems="center"
         justifyContent="center"
-        bgcolor="#FFFFFF"
-        height="calc(100vh - 80px)"
       >
         <Box sx={{ width: { xs: '100%', md: 500 } }}>
           <Stepper activeStep={activeStep} orientation="vertical">
-            <Step
-            // active={index === activeStep - 1 || index === activeStep}
-            >
+            <Step active={activeStep === 0 || activeStep > 0}>
               <StepLabel>Thông tin khách</StepLabel>
               <StepContent>
                 <Stack spacing={2}>
@@ -136,9 +133,7 @@ export default function Page() {
                 </Box>
               </StepContent>
             </Step>
-            <Step
-            // active={index === activeStep - 1 || index === activeStep}
-            >
+            <Step active={activeStep === 1 || activeStep > 1}>
               <StepLabel>Thông tin thẻ</StepLabel>
               <StepContent>
                 <Stack spacing={2}>
@@ -209,9 +204,7 @@ export default function Page() {
                 </Box>
               </StepContent>
             </Step>
-            <Step
-            // active={index === activeStep - 1 || index === activeStep}
-            >
+            <Step active={activeStep === 2 || activeStep > 2}>
               <StepLabel>Ảnh khách hàng</StepLabel>
               <StepContent>
                 <Stack>
@@ -246,9 +239,7 @@ export default function Page() {
                 </Box>
               </StepContent>
             </Step>
-            <Step
-            // active={index === activeStep - 1 || index === activeStep}
-            >
+            <Step active={activeStep === 3 || activeStep > 3}>
               <StepLabel>OTP</StepLabel>
               <StepContent>
                 <Stack px={3} direction="row" alignItems="center" spacing={2}>
