@@ -1,17 +1,17 @@
 'use client'
 import React from 'react'
-import { Stack, TextField, Button, Typography, Divider } from '@mui/material'
+import { Stack, TextField, Button, Typography, Divider, Avatar } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useResponsiveValue } from '@/app/hooks/use-responsive-value'
 
 export default function Page() {
   const router = useRouter()
+  const isMobile = useResponsiveValue({ xs: true, md: false })
   return (
     <>
       <Stack
-        width={40}
-        height={40}
         alignItems="center"
         justifyContent="center"
         borderRadius="50%"
@@ -24,10 +24,14 @@ export default function Page() {
         }}
         onClick={() => router.push('/')}
         position="absolute"
+        zIndex={10}
+        left={{ xs: 30, md: 50 }}
+        top={{ xs: 105, md: 120 }}
       >
         <ArrowBackIosIcon />
       </Stack>
       <Stack
+        pt={{ xs: 4, md: 4 }}
         spacing={{ xs: 2, md: 4 }}
         alignItems="center"
         justifyContent="center"
@@ -37,7 +41,7 @@ export default function Page() {
           position="relative"
           bgcolor="#FFFFFF"
           boxShadow="0 0 0 1px rgba(0,0,0,.04),0 4px 16px -4px rgba(0,0,0,.16)"
-          borderRadius="8px"
+          borderRadius={isMobile ? 0 : '8px'}
           width={{ xs: '100%', md: 500 }}
           spacing={2.5}
           py={3}
@@ -115,7 +119,7 @@ export default function Page() {
                 <Stack
                   position="relative"
                   width="100%"
-                  height={{ xs: 150, md: 220 }}
+                  height={{ xs: 190, md: 220 }}
                 >
                   <Image src="/platium.png" alt="platium" fill />
                 </Stack>
@@ -135,8 +139,19 @@ export default function Page() {
                   <Typography>Hạng thẻ:</Typography>
                   <Typography>Platium</Typography>
                 </Stack>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Typography>Trạng thái:</Typography>
+                  <Typography>Active</Typography>
+                </Stack>
               </Stack>
             </Stack>
+          </Stack>
+          <Stack px={3}>
+            <Avatar />
           </Stack>
           <Stack px={3} direction="row" alignItems="center" spacing={2}>
             <TextField fullWidth size="small" variant="standard" label="OTP" />
