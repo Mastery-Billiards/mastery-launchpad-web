@@ -1,14 +1,36 @@
 'use client'
-import React from 'react'
-import { Stack, TextField, Button, Typography, Divider, Avatar } from '@mui/material'
+import React, { useRef, useCallback, useState } from 'react'
+import {
+  Stack,
+  TextField,
+  Button,
+  Typography,
+  Divider,
+  Avatar,
+} from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useResponsiveValue } from '@/app/hooks/use-responsive-value'
+import Webcam from 'react-webcam'
+
+const videoConstraints = {
+  width: 1280,
+  height: 720,
+  facingMode: 'user',
+}
 
 export default function Page() {
   const router = useRouter()
   const isMobile = useResponsiveValue({ xs: true, md: false })
+  const webcamRef = useRef<Webcam>(null)
+  const [url, setUrl] = useState<string | null>(null)
+  const capture = useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot()
+    if (imageSrc) {
+      return setUrl(imageSrc)
+    }
+  }, [webcamRef])
   return (
     <>
       <Stack
@@ -31,11 +53,10 @@ export default function Page() {
         <ArrowBackIosIcon />
       </Stack>
       <Stack
-        pt={{ xs: 4, md: 4 }}
         spacing={{ xs: 2, md: 4 }}
         alignItems="center"
         justifyContent="center"
-        height="calc(100vh - 144px)"
+        // height="calc(100vh - 144px)"
       >
         <Stack
           position="relative"
@@ -150,8 +171,23 @@ export default function Page() {
               </Stack>
             </Stack>
           </Stack>
-          <Stack px={3}>
-            <Avatar />
+          <Stack px={3} spacing={2.5}>
+            <Webcam
+              audio={false}
+              height="100%"
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              width="100%"
+              videoConstraints={videoConstraints}
+              imageSmoothing
+              mirrored
+            />
+            {url && (
+              <Stack alignItems="center">
+                <Avatar src={url} sx={{ width: 250, height: 250 }} />
+              </Stack>
+            )}
+            <Button onClick={capture}>Capture photo</Button>
           </Stack>
           <Stack px={3} direction="row" alignItems="center" spacing={2}>
             <TextField fullWidth size="small" variant="standard" label="OTP" />

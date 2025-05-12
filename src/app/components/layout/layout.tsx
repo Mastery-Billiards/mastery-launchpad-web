@@ -24,7 +24,7 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
           </Stack>
         </Toolbar>
       </AppBar>
-      <Box py={4}>{children}</Box>
+      <Box>{children}</Box>
     </Stack>
   )
 }

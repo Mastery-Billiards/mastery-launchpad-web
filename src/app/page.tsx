@@ -8,7 +8,12 @@ import { useRouter } from 'next/navigation'
 export default function Home() {
   const router = useRouter()
   return (
-    <Stack spacing={{ xs: 2, md: 4 }} direction="row" alignItems="center">
+    <Stack
+      m={2.5}
+      spacing={{ xs: 2, md: 4 }}
+      direction="row"
+      alignItems="center"
+    >
       <Stack spacing={1.5} alignItems="center">
         <Stack
           width={{ xs: 50, md: 120 }}
