@@ -6,6 +6,7 @@ import { Josefin_Sans } from 'next/font/google'
 import { ThemeProvider } from '@mui/material/styles'
 import theme from '../theme'
 import Layout from '@/app/components/layout/layout'
+import SnackbarProvider from '@/app/providers/snackbar-provider'
 
 const josefin = Josefin_Sans({
   weight: ['300', '400', '500', '700'],
@@ -25,7 +26,9 @@ export default function RootLayout({
         <AppRouterCacheProvider options={{ enableCssLayer: true, key: 'css' }}>
           <React.Suspense fallback={<LinearProgress />}>
             <ThemeProvider theme={theme}>
-              <Layout>{children}</Layout>
+              <SnackbarProvider>
+                <Layout>{children}</Layout>
+              </SnackbarProvider>
             </ThemeProvider>
           </React.Suspense>
         </AppRouterCacheProvider>
