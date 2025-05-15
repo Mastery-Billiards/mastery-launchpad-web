@@ -14,8 +14,6 @@ import {
   CircularProgress,
   Divider,
   Link,
-  Dialog,
-  DialogContent,
 } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { useRouter } from 'next/navigation'
@@ -23,7 +21,9 @@ import Image from 'next/image'
 import Webcam from 'react-webcam'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import { format } from 'date-fns'
-import { CARD_IMAGE_MAP } from '@/app/constant/card'
+import { CARD_IMAGE_MAP, CARD_STATUS } from '@/app/constant/card'
+import { dataURLtoBlob } from '@/app/utils/image'
+import ConfirmDialog from '@/app/components/shared/confirm-dialog'
 
 const videoConstraints = {
   width: 1280,
@@ -86,10 +86,11 @@ export default function Page() {
       try {
         setCustomerInfo(null)
         const res = await fetch(
-          `https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/customers?top=1&contactNumber=${phoneNumber}`
+          `http://103.90.226.218:8080/api/v1/mastery/customers?top=1&contactNumber=${phoneNumber}`
         )
         if (!res.ok) {
           if (res.status === 404) {
+            const json = await res.json()
             openSnackbar({
               severity: 'error',
               message: `Khách hàng với số điện thoại ${phoneNumber} không tồn tại`,
@@ -99,15 +100,19 @@ export default function Page() {
           }
         } else {
           const json = await res.json()
-          setCustomerInfo(json.data[0])
-          // if (json.data[0].isCardIssued) {
-          //   openSnackbar({
-          //     severity: 'error',
-          //     message: `Khách hàng với số điện thoại ${phoneNumber} đã được cấp thẻ`,
-          //   })
-          // } else {
-          //   setCustomerInfo(json.data[0])
-          // }
+          if (json.data[0]?.isCardIssued) {
+            openSnackbar({
+              severity: 'error',
+              message: `Khách hàng với số điện thoại ${phoneNumber} đã được cấp thẻ`,
+            })
+          } else if (json.data[0]?.rank === 'BASIC') {
+            openSnackbar({
+              severity: 'warning',
+              message: 'Khách hàng không đủ điều kiện để phát hành thẻ',
+            })
+          } else {
+            setCustomerInfo(json.data[0])
+          }
         }
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -128,7 +133,7 @@ export default function Page() {
       setLoading({ isLoading: true, type: 'card' })
       try {
         const res = await fetch(
-          `https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/customers/membership/cards/${cardCode}`
+          `http://103.90.226.218:8080/api/v1/mastery/customers/membership/cards/${cardCode}`
         )
         if (!res.ok) {
           if (res.status === 404) {
@@ -164,10 +169,15 @@ export default function Page() {
         const formData = new FormData()
         formData.append('revision', customerInfo.revision)
         formData.append('newCode', cardInfo.code)
-        formData.append('avatar', url)
+        const blob = dataURLtoBlob(url)
+        formData.append(
+          'avatar',
+          blob,
+          `avatar_${customerInfo.contactNumber}.jpg`
+        )
         formData.append('otp', otp)
         const res = await fetch(
-          'https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/customers/DEVRYDW3L2/membership/cards/issue',
+          `http://103.90.226.218:8080/api/v1/mastery/customers/${customerInfo.code}/membership/cards/issue`,
           {
             method: 'POST',
             body: formData,
@@ -205,9 +215,13 @@ export default function Page() {
         }
         try {
           const res = await fetch(
-            'https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/otp/send',
+            'http://103.90.226.218:8080/api/v1/mastery/otp/send',
             {
               method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ phoneNumber: customerInfo.contactNumber }),
             }
           )
           if (!res.ok) {
@@ -247,6 +261,16 @@ export default function Page() {
     setCardInfo(null)
     setOtp('')
   }, [])
+
+  const handleCheckCard = useCallback(() => {
+    if (customerInfo?.rank === cardInfo?.rank) {
+      return handleNext()
+    }
+    return openSnackbar({
+      severity: 'error',
+      message: 'Hạng thành viên và hạng thẻ không trùng khớp',
+    })
+  }, [cardInfo?.rank, customerInfo?.rank, openSnackbar])
 
   return (
     <>
@@ -372,6 +396,14 @@ export default function Page() {
                             {customerInfo.gender ? 'Nam' : 'Nữ'}
                           </Typography>
                         </Stack>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          <Typography>Hạng thành viên:</Typography>
+                          <Typography>{customerInfo.rank}</Typography>
+                        </Stack>
                       </Stack>
                       <Button
                         variant="contained"
@@ -433,7 +465,7 @@ export default function Page() {
                           <Stack
                             position="relative"
                             width="100%"
-                            height={{ xs: 190, md: 220 }}
+                            height={{ xs: 200, md: 250 }}
                           >
                             <Image
                               src={CARD_IMAGE_MAP[cardInfo.rank]}
@@ -463,7 +495,9 @@ export default function Page() {
                             justifyContent="space-between"
                           >
                             <Typography>Trạng thái:</Typography>
-                            <Typography>{cardInfo?.status}</Typography>
+                            <Typography>
+                              {CARD_STATUS[cardInfo?.status]}
+                            </Typography>
                           </Stack>
                         </Stack>
                       </Stack>
@@ -471,7 +505,7 @@ export default function Page() {
                         <Button
                           variant="contained"
                           fullWidth
-                          onClick={handleNext}
+                          onClick={handleCheckCard}
                           disabled={activeStep > 1}
                         >
                           Tiếp tục
@@ -606,80 +640,53 @@ export default function Page() {
           </Button>
         </Stack>
       </Stack>
-      <Dialog
+      <ConfirmDialog
         open={showSuccess}
-        fullWidth
-        // maxWidth={size}
-        sx={{ backdropFilter: 'blur(3px)' }}
+        onClose={closeSuccessDialog}
+        title="Phát hành thẻ"
+        type="success"
       >
-        <DialogContent>
-          <Stack spacing={2}>
-            <Stack
-              position="absolute"
-              top={0}
-              left={0}
-              width="100%"
-              height={50}
-              bgcolor="#22BB33"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Typography textTransform="uppercase" fontSize={20} color="white">
-                Phát hành thẻ
-              </Typography>
-            </Stack>
-            <Stack px={1} py={4} spacing={1}>
-              <Stack alignItems="center" spacing={2}>
-                <Avatar
-                  src={url ? url : undefined}
-                  sx={{ width: 100, height: 100 }}
-                />
-              </Stack>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Typography>Mã khách hàng:</Typography>
-                <Typography>{customerInfo?.code}</Typography>
-              </Stack>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Typography>Họ và tên:</Typography>
-                <Typography>{customerInfo?.name}</Typography>
-              </Stack>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Typography>Số điện thoại:</Typography>
-                <Typography>{customerInfo?.contactNumber}</Typography>
-              </Stack>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Typography>Hạng thẻ:</Typography>
-                <Typography>{cardInfo?.rank}</Typography>
-              </Stack>
-            </Stack>
-            <Button
-              fullWidth
-              color="success"
-              variant="contained"
-              onClick={closeSuccessDialog}
-              sx={{ bgcolor: '#22BB33' }}
-            >
-              Đóng
-            </Button>
+        <Stack spacing={1}>
+          <Stack alignItems="center" spacing={2}>
+            <Avatar
+              src={url ? url : undefined}
+              sx={{ width: 100, height: 100 }}
+            />
           </Stack>
-        </DialogContent>
-      </Dialog>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Mã khách hàng:</Typography>
+            <Typography>{customerInfo?.code}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Họ và tên:</Typography>
+            <Typography>{customerInfo?.name}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Số điện thoại:</Typography>
+            <Typography>{customerInfo?.contactNumber}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Hạng thẻ:</Typography>
+            <Typography>{cardInfo?.rank}</Typography>
+          </Stack>
+        </Stack>
+      </ConfirmDialog>
     </>
   )
 }
