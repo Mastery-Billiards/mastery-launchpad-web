@@ -1,5 +1,6 @@
 'use client'
 import React, { useRef, useCallback, useState } from 'react'
+import OtpInput from 'react-otp-input'
 import {
   Stack,
   TextField,
@@ -7,11 +8,14 @@ import {
   Typography,
   Avatar,
   Stepper,
-  Box,
   Step,
   StepLabel,
   StepContent,
   CircularProgress,
+  Divider,
+  Link,
+  Dialog,
+  DialogContent,
 } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { useRouter } from 'next/navigation'
@@ -35,6 +39,7 @@ type Customer = {
   gender: boolean
   revision: string
   code: string
+  isCardIssued: boolean
 }
 
 type Card = {
@@ -46,7 +51,6 @@ type Card = {
 export default function Page() {
   const router = useRouter()
   const openSnackbar = useSnackbar()
-  // const isMobile = useResponsiveValue({ xs: true, md: false })
   const webcamRef = useRef<Webcam>(null)
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
@@ -58,6 +62,8 @@ export default function Page() {
     isLoading: boolean
     type: string
   } | null>(null)
+  const [otp, setOtp] = useState<string>('')
+  const [showSuccess, setShowSuccess] = useState<boolean>(false)
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -78,14 +84,31 @@ export default function Page() {
     if (!!phoneNumber) {
       setLoading({ isLoading: true, type: 'phone' })
       try {
+        setCustomerInfo(null)
         const res = await fetch(
           `https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/customers?top=1&contactNumber=${phoneNumber}`
         )
         if (!res.ok) {
-          openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+          if (res.status === 404) {
+            openSnackbar({
+              severity: 'error',
+              message: `Khách hàng với số điện thoại ${phoneNumber} không tồn tại`,
+            })
+          } else {
+            openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+          }
+        } else {
+          const json = await res.json()
+          setCustomerInfo(json.data[0])
+          // if (json.data[0].isCardIssued) {
+          //   openSnackbar({
+          //     severity: 'error',
+          //     message: `Khách hàng với số điện thoại ${phoneNumber} đã được cấp thẻ`,
+          //   })
+          // } else {
+          //   setCustomerInfo(json.data[0])
+          // }
         }
-        const json = await res.json()
-        setCustomerInfo(json.data[0])
       } catch (err: unknown) {
         if (err instanceof Error) {
           openSnackbar({ severity: 'error', message: err.message })
@@ -108,10 +131,18 @@ export default function Page() {
           `https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/customers/membership/cards/${cardCode}`
         )
         if (!res.ok) {
-          openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+          if (res.status === 404) {
+            openSnackbar({
+              severity: 'error',
+              message: `Thẻ khách hàng với mã ${cardCode} không tồn tại`,
+            })
+          } else {
+            openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+          }
+        } else {
+          const json = await res.json()
+          setCardInfo(json)
         }
-        const json = await res.json()
-        setCardInfo(json)
       } catch (err: unknown) {
         if (err instanceof Error) {
           openSnackbar({ severity: 'error', message: err.message })
@@ -134,6 +165,7 @@ export default function Page() {
         formData.append('revision', customerInfo.revision)
         formData.append('newCode', cardInfo.code)
         formData.append('avatar', url)
+        formData.append('otp', otp)
         const res = await fetch(
           'https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/customers/DEVRYDW3L2/membership/cards/issue',
           {
@@ -143,6 +175,12 @@ export default function Page() {
         )
         if (!res.ok) {
           openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+        } else {
+          setShowSuccess(true)
+          openSnackbar({
+            severity: 'success',
+            message: 'Phát hành thẻ thành công',
+          })
         }
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -157,7 +195,58 @@ export default function Page() {
         setLoading(null)
       }
     }
-  }, [cardInfo, customerInfo, url, openSnackbar])
+  }, [cardInfo, customerInfo, url, otp, openSnackbar])
+  const requestOTP = useCallback(
+    async (isResend?: boolean) => {
+      if (!!cardInfo && !!customerInfo && url) {
+        setLoading({ isLoading: true, type: isResend ? 'resend' : 'otp' })
+        if (isResend) {
+          setOtp('')
+        }
+        try {
+          const res = await fetch(
+            'https://2124e8a9-da88-46d7-94fc-4310f61faab3.mock.pstmn.io/api/v1/mastery/otp/send',
+            {
+              method: 'POST',
+            }
+          )
+          if (!res.ok) {
+            openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+          } else {
+            openSnackbar({
+              severity: 'success',
+              message: isResend
+                ? 'Gửi lại mã OTP đến Zalo khách hàng thành công'
+                : 'Gửi mã OTP đến Zalo của khách hàng thành công',
+            })
+          }
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            openSnackbar({ severity: 'error', message: err.message })
+          } else {
+            openSnackbar({
+              severity: 'error',
+              message: `'An unexpected error occurred:', ${err}`,
+            })
+          }
+        } finally {
+          setLoading(null)
+        }
+      }
+    },
+    [cardInfo, customerInfo, url, openSnackbar]
+  )
+
+  const closeSuccessDialog = useCallback(() => {
+    setShowSuccess(false)
+    setUrl(null)
+    setActiveStep(0)
+    setPhoneNumber('')
+    setCardCode('')
+    setCustomerInfo(null)
+    setCardInfo(null)
+    setOtp('')
+  }, [])
 
   return (
     <>
@@ -186,7 +275,11 @@ export default function Page() {
         alignItems="center"
         justifyContent="center"
       >
-        <Box sx={{ width: { xs: '100%', md: 500 } }}>
+        <Stack
+          spacing={3}
+          divider={<Divider />}
+          sx={{ width: { xs: '100%', md: 500 } }}
+        >
           <Stepper activeStep={activeStep} orientation="vertical">
             <Step active={activeStep === 0 || activeStep > 0}>
               <StepLabel>Thông tin khách</StepLabel>
@@ -200,6 +293,10 @@ export default function Page() {
                       label="SỐ ĐIỆN THOẠI"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
+                      disabled={
+                        (loading?.isLoading && loading?.type === 'phone') ||
+                        activeStep > 0
+                      }
                     />
                     <Button
                       variant="outlined"
@@ -300,6 +397,10 @@ export default function Page() {
                       label="QUÉT MÃ BARCODE"
                       value={cardCode}
                       onChange={(e) => setCardCode(e.target.value)}
+                      disabled={
+                        (loading?.isLoading && loading?.type === 'card') ||
+                        activeStep > 1
+                      }
                     />
                     <Button
                       variant="outlined"
@@ -419,7 +520,10 @@ export default function Page() {
                         <Button
                           variant="contained"
                           fullWidth
-                          onClick={handleNext}
+                          onClick={() => {
+                            handleNext()
+                            return requestOTP()
+                          }}
                           disabled={activeStep > 2}
                         >
                           Tiếp tục
@@ -439,41 +543,143 @@ export default function Page() {
               </StepContent>
             </Step>
             <Step active={activeStep === 3 || activeStep > 3}>
-              <StepLabel>OTP</StepLabel>
+              <StepLabel>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <span>OTP</span>
+                  {loading?.isLoading && loading?.type === 'otp' && (
+                    <CircularProgress size={16} />
+                  )}
+                </Stack>
+              </StepLabel>
               <StepContent>
-                <Stack spacing={2}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="standard"
-                      label="OTP"
-                    />
-                    <Button
-                      variant="contained"
-                      onClick={submitData}
-                      disabled={
-                        loading?.isLoading && loading?.type === 'submit'
-                      }
-                      startIcon={
-                        loading?.isLoading &&
-                        loading?.type === 'submit' && (
-                          <CircularProgress size={20} />
-                        )
-                      }
+                <Stack spacing={1}>
+                  <OtpInput
+                    value={otp}
+                    onChange={setOtp}
+                    numInputs={6}
+                    renderSeparator={<span>-</span>}
+                    renderInput={(props) => <input {...props} />}
+                    inputStyle={{
+                      width: 50,
+                      height: 50,
+                      margin: 8,
+                      fontSize: '1.5rem',
+                      borderRadius: 4,
+                      border: '1px solid rgba(0,0,0,0.3)',
+                    }}
+                  />
+                  <Stack
+                    direction="row"
+                    width="100%"
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    spacing={1}
+                  >
+                    {loading?.isLoading && loading?.type === 'resend' && (
+                      <CircularProgress size={16} />
+                    )}
+                    <Link
+                      underline="hover"
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => requestOTP(true)}
                     >
-                      Gửi
-                    </Button>
+                      Gửi lại mã OTP
+                    </Link>
                   </Stack>
-                  <Button variant="outlined" onClick={handleBack}>
-                    Trở lại
-                  </Button>
                 </Stack>
               </StepContent>
             </Step>
           </Stepper>
-        </Box>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={submitData}
+            disabled={
+              (loading?.isLoading && loading?.type === 'submit') || !otp.length
+            }
+            startIcon={
+              loading?.isLoading &&
+              loading?.type === 'submit' && <CircularProgress size={20} />
+            }
+          >
+            Phát hành thẻ
+          </Button>
+        </Stack>
       </Stack>
+      <Dialog
+        open={showSuccess}
+        fullWidth
+        // maxWidth={size}
+        sx={{ backdropFilter: 'blur(3px)' }}
+      >
+        <DialogContent>
+          <Stack spacing={2}>
+            <Stack
+              position="absolute"
+              top={0}
+              left={0}
+              width="100%"
+              height={50}
+              bgcolor="#22BB33"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Typography textTransform="uppercase" fontSize={20} color="white">
+                Phát hành thẻ
+              </Typography>
+            </Stack>
+            <Stack px={1} py={4} spacing={1}>
+              <Stack alignItems="center" spacing={2}>
+                <Avatar
+                  src={url ? url : undefined}
+                  sx={{ width: 100, height: 100 }}
+                />
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Mã khách hàng:</Typography>
+                <Typography>{customerInfo?.code}</Typography>
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Họ và tên:</Typography>
+                <Typography>{customerInfo?.name}</Typography>
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Số điện thoại:</Typography>
+                <Typography>{customerInfo?.contactNumber}</Typography>
+              </Stack>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography>Hạng thẻ:</Typography>
+                <Typography>{cardInfo?.rank}</Typography>
+              </Stack>
+            </Stack>
+            <Button
+              fullWidth
+              color="success"
+              variant="contained"
+              onClick={closeSuccessDialog}
+              sx={{ bgcolor: '#22BB33' }}
+            >
+              Đóng
+            </Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

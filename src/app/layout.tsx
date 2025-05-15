@@ -2,13 +2,13 @@ import React from 'react'
 import './globals.css'
 import LinearProgress from '@mui/material/LinearProgress'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
-import { Josefin_Sans } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import { ThemeProvider } from '@mui/material/styles'
 import theme from '../theme'
 import Layout from '@/app/components/layout/layout'
 import SnackbarProvider from '@/app/providers/snackbar-provider'
 
-const josefin = Josefin_Sans({
+const josefin = Nunito({
   weight: ['300', '400', '500', '700'],
   subsets: ['latin'],
   display: 'swap',

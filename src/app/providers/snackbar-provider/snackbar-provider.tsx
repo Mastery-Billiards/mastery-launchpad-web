@@ -2,12 +2,11 @@
 import React, {
   createContext,
   ReactNode,
-  useCallback,
+  useCallback, useEffect,
   useMemo,
   useState,
 } from 'react'
-import { AlertColor, Snackbar, SlideProps, Alert } from '@mui/material'
-import Transition from '@/app/components/shared/transition'
+import { AlertColor, Snackbar, Alert } from '@mui/material'
 import { ParentFC } from '@/app/utils/react'
 
 interface SnackMessage {
@@ -53,11 +52,6 @@ export const SnackbarProvider: ParentFC = ({ children }) => {
         autoHideDuration={message?.timeout || 5000}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         onClose={() => setMessage(null)}
-        slotProps={{
-          transition: (props: SlideProps) => (
-            <Transition {...props} direction="down" />
-          ),
-        }}
       >
         <Alert
           onClose={() => setMessage(null)}
