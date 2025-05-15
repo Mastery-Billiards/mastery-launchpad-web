@@ -64,6 +64,7 @@ export default function Page() {
   } | null>(null)
   const [otp, setOtp] = useState<string>('')
   const [showSuccess, setShowSuccess] = useState<boolean>(false)
+  const [showError, setShowError] = useState<boolean>(false)
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -645,6 +646,53 @@ export default function Page() {
         onClose={closeSuccessDialog}
         title="Phát hành thẻ"
         type="success"
+      >
+        <Stack spacing={1}>
+          <Stack alignItems="center" spacing={2}>
+            <Avatar
+              src={url ? url : undefined}
+              sx={{ width: 100, height: 100 }}
+            />
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Mã khách hàng:</Typography>
+            <Typography>{customerInfo?.code}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Họ và tên:</Typography>
+            <Typography>{customerInfo?.name}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Số điện thoại:</Typography>
+            <Typography>{customerInfo?.contactNumber}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Hạng thẻ:</Typography>
+            <Typography>{cardInfo?.rank}</Typography>
+          </Stack>
+        </Stack>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={showError}
+        onClose={closeSuccessDialog}
+        title="Phát hành thẻ"
+        type="error"
       >
         <Stack spacing={1}>
           <Stack alignItems="center" spacing={2}>
