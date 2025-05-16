@@ -1,37 +1,30 @@
 'use client'
-import React, { useRef, useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import OtpInput from 'react-otp-input'
 import {
-  Stack,
-  TextField,
-  Button,
-  Typography,
   Avatar,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
+  Button,
   CircularProgress,
   Divider,
   Link,
+  Stack,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
 } from '@mui/material'
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import Webcam from 'react-webcam'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
-import { format } from 'date-fns'
-import { CARD_IMAGE_MAP, CARD_STATUS } from '@/app/constant/card'
 import { dataURLtoBlob } from '@/app/utils/image'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
+import BackButton from '@/app/components/shared/back-button'
+import CustomerInfo from '@/app/card-issuance/components/customer-info'
+import CardInfo from '@/app/card-issuance/components/card-info'
+import { Container } from '@/app/card-issuance/page.styled'
+import { CARD_STATUS } from '@/app/constant/card'
 
-const videoConstraints = {
-  width: 1280,
-  height: 720,
-  facingMode: 'user',
-}
-
-type Customer = {
+export type Customer = {
   name: string
   contactNumber: string
   birthDate: string
@@ -42,14 +35,13 @@ type Customer = {
   isCardIssued: boolean
 }
 
-type Card = {
+export type Card = {
   code: string
   rank: string
   status: string
 }
 
 export default function Page() {
-  const router = useRouter()
   const openSnackbar = useSnackbar()
   const webcamRef = useRef<Webcam>(null)
   const [url, setUrl] = useState<string | null>(null)
@@ -64,12 +56,16 @@ export default function Page() {
   } | null>(null)
   const [otp, setOtp] = useState<string>('')
   const [showSuccess, setShowSuccess] = useState<boolean>(false)
-  const [showError, setShowError] = useState<boolean>(false)
+  const [showError, setShowError] = useState<null | {
+    status: number
+    res: { string: { string: string } }
+  }>(null)
+  const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
+  const [isEdit, setIsEdit] = useState(false)
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
   }
-
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
@@ -80,89 +76,6 @@ export default function Page() {
       return setUrl(imageSrc)
     }
   }, [webcamRef])
-
-  const fetchCustomerInfo = useCallback(async () => {
-    if (!!phoneNumber) {
-      setLoading({ isLoading: true, type: 'phone' })
-      try {
-        setCustomerInfo(null)
-        const res = await fetch(
-          `http://103.90.226.218:8080/api/v1/mastery/customers?top=1&contactNumber=${phoneNumber}`
-        )
-        if (!res.ok) {
-          if (res.status === 404) {
-            const json = await res.json()
-            openSnackbar({
-              severity: 'error',
-              message: `Khách hàng với số điện thoại ${phoneNumber} không tồn tại`,
-            })
-          } else {
-            openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
-          }
-        } else {
-          const json = await res.json()
-          if (json.data[0]?.isCardIssued) {
-            openSnackbar({
-              severity: 'error',
-              message: `Khách hàng với số điện thoại ${phoneNumber} đã được cấp thẻ`,
-            })
-          } else if (json.data[0]?.rank === 'BASIC') {
-            openSnackbar({
-              severity: 'warning',
-              message: 'Khách hàng không đủ điều kiện để phát hành thẻ',
-            })
-          } else {
-            setCustomerInfo(json.data[0])
-          }
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          openSnackbar({ severity: 'error', message: err.message })
-        } else {
-          openSnackbar({
-            severity: 'error',
-            message: `'An unexpected error occurred:', ${err}`,
-          })
-        }
-      } finally {
-        setLoading(null)
-      }
-    }
-  }, [openSnackbar, phoneNumber])
-  const fetchCardInfo = useCallback(async () => {
-    if (!!cardCode) {
-      setLoading({ isLoading: true, type: 'card' })
-      try {
-        const res = await fetch(
-          `http://103.90.226.218:8080/api/v1/mastery/customers/membership/cards/${cardCode}`
-        )
-        if (!res.ok) {
-          if (res.status === 404) {
-            openSnackbar({
-              severity: 'error',
-              message: `Thẻ khách hàng với mã ${cardCode} không tồn tại`,
-            })
-          } else {
-            openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
-          }
-        } else {
-          const json = await res.json()
-          setCardInfo(json)
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          openSnackbar({ severity: 'error', message: err.message })
-        } else {
-          openSnackbar({
-            severity: 'error',
-            message: `'An unexpected error occurred:', ${err}`,
-          })
-        }
-      } finally {
-        setLoading(null)
-      }
-    }
-  }, [openSnackbar, cardCode])
   const submitData = useCallback(async () => {
     if (!!cardInfo && !!customerInfo && url) {
       setLoading({ isLoading: true, type: 'submit' })
@@ -185,7 +98,10 @@ export default function Page() {
           }
         )
         if (!res.ok) {
-          openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+          setShowError({
+            status: res.status,
+            res: await res.json(),
+          })
         } else {
           setShowSuccess(true)
           openSnackbar({
@@ -226,7 +142,10 @@ export default function Page() {
             }
           )
           if (!res.ok) {
-            openSnackbar({ severity: 'error', message: 'Failed to fetch data' })
+            setShowError({
+              status: res.status,
+              res: await res.json(),
+            })
           } else {
             openSnackbar({
               severity: 'success',
@@ -251,9 +170,7 @@ export default function Page() {
     },
     [cardInfo, customerInfo, url, openSnackbar]
   )
-
-  const closeSuccessDialog = useCallback(() => {
-    setShowSuccess(false)
+  const handleResetState = useCallback(() => {
     setUrl(null)
     setActiveStep(0)
     setPhoneNumber('')
@@ -262,7 +179,10 @@ export default function Page() {
     setCardInfo(null)
     setOtp('')
   }, [])
-
+  const closeSuccessDialog = useCallback(() => {
+    setShowSuccess(false)
+    handleResetState()
+  }, [handleResetState])
   const handleCheckCard = useCallback(() => {
     if (customerInfo?.rank === cardInfo?.rank) {
       return handleNext()
@@ -273,27 +193,39 @@ export default function Page() {
     })
   }, [cardInfo?.rank, customerInfo?.rank, openSnackbar])
 
+  const syntaxHighlight = useCallback((json: string) => {
+    const newJson = json
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+    return newJson.replace(
+      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      function (match: string) {
+        let cls = 'number'
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'key'
+          } else {
+            cls = 'string'
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'boolean'
+        } else if (/null/.test(match)) {
+          cls = 'null'
+        }
+        return '<span class="' + cls + '">' + match + '</span>'
+      }
+    )
+  }, [])
+
+  const handleEdit = useCallback(() => {
+    setConfirmInfo(false)
+    setIsEdit(true)
+  }, [])
+
   return (
     <>
-      <Stack
-        alignItems="center"
-        justifyContent="center"
-        borderRadius="50%"
-        sx={{
-          cursor: 'pointer',
-          transition: 'transform .3s ease',
-          '&:hover': {
-            transform: 'scale(1.1)',
-          },
-        }}
-        onClick={() => router.push('/')}
-        position="absolute"
-        zIndex={10}
-        left={{ xs: 30, md: 50 }}
-        top={{ xs: 105, md: 120 }}
-      >
-        <ArrowBackIosIcon />
-      </Stack>
+      <BackButton />
       <Stack
         py={4}
         spacing={{ xs: 2, md: 4 }}
@@ -309,227 +241,43 @@ export default function Page() {
             <Step active={activeStep === 0 || activeStep > 0}>
               <StepLabel>Thông tin khách</StepLabel>
               <StepContent>
-                <Stack spacing={2}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="standard"
-                      label="SỐ ĐIỆN THOẠI"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      disabled={
-                        (loading?.isLoading && loading?.type === 'phone') ||
-                        activeStep > 0
-                      }
-                    />
-                    <Button
-                      variant="outlined"
-                      onClick={fetchCustomerInfo}
-                      disabled={
-                        (loading?.isLoading && loading?.type === 'phone') ||
-                        activeStep > 0 ||
-                        !phoneNumber.length
-                      }
-                      startIcon={
-                        loading?.isLoading &&
-                        loading?.type === 'phone' && (
-                          <CircularProgress size={20} />
-                        )
-                      }
-                      sx={{ minWidth: 'max-content' }}
-                    >
-                      Xác nhận
-                    </Button>
-                  </Stack>
-                  {!!customerInfo && (
-                    <Stack spacing={2}>
-                      <Stack
-                        border="1px solid #A3A7A9"
-                        borderRadius="4px"
-                        p={1}
-                        spacing={1}
-                      >
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography>Mã khách hàng:</Typography>
-                          <Typography>{customerInfo.code}</Typography>
-                        </Stack>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography>Họ và tên:</Typography>
-                          <Typography>{customerInfo.name}</Typography>
-                        </Stack>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography>Số điện thoại:</Typography>
-                          <Typography>{customerInfo.contactNumber}</Typography>
-                        </Stack>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography>Ngày sinh:</Typography>
-                          <Typography>
-                            {format(
-                              new Date(customerInfo.birthDate),
-                              'dd/MM/yyyy'
-                            )}
-                          </Typography>
-                        </Stack>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography>Giới tính:</Typography>
-                          <Typography>
-                            {customerInfo.gender ? 'Nam' : 'Nữ'}
-                          </Typography>
-                        </Stack>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <Typography>Hạng thành viên:</Typography>
-                          <Typography>{customerInfo.rank}</Typography>
-                        </Stack>
-                      </Stack>
-                      <Button
-                        variant="contained"
-                        onClick={handleNext}
-                        disabled={activeStep > 0}
-                      >
-                        Tiếp tục
-                      </Button>
-                    </Stack>
-                  )}
-                </Stack>
+                <CustomerInfo
+                  handleNextAction={handleNext}
+                  activeStep={activeStep}
+                  setShowErrorAction={setShowError}
+                  loading={loading}
+                  setLoadingAction={setLoading}
+                  customerInfo={customerInfo}
+                  setCustomerInfoAction={setCustomerInfo}
+                  phoneNumber={phoneNumber}
+                  setPhoneNumberAction={setPhoneNumber}
+                  isEdit={isEdit}
+                />
               </StepContent>
             </Step>
             <Step active={activeStep === 1 || activeStep > 1}>
               <StepLabel>Thông tin thẻ</StepLabel>
               <StepContent>
-                <Stack spacing={2}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="standard"
-                      label="QUÉT MÃ BARCODE"
-                      value={cardCode}
-                      onChange={(e) => setCardCode(e.target.value)}
-                      disabled={
-                        (loading?.isLoading && loading?.type === 'card') ||
-                        activeStep > 1
-                      }
-                    />
-                    <Button
-                      variant="outlined"
-                      onClick={fetchCardInfo}
-                      disabled={
-                        (loading?.isLoading && loading?.type === 'card') ||
-                        activeStep > 1 ||
-                        !cardCode.length
-                      }
-                      startIcon={
-                        loading?.isLoading &&
-                        loading?.type === 'card' && (
-                          <CircularProgress size={20} />
-                        )
-                      }
-                      sx={{ minWidth: 'max-content' }}
-                    >
-                      Xác nhận
-                    </Button>
-                  </Stack>
-                  {!!cardInfo && (
-                    <Stack spacing={2}>
-                      <Stack
-                        border="1px solid #A3A7A9"
-                        borderRadius="4px"
-                        p={1}
-                        spacing={1.5}
-                      >
-                        <Stack spacing={1}>
-                          <Stack
-                            position="relative"
-                            width="100%"
-                            height={{ xs: 200, md: 250 }}
-                          >
-                            <Image
-                              src={CARD_IMAGE_MAP[cardInfo.rank]}
-                              alt="platium"
-                              fill
-                            />
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                          >
-                            <Typography>Mã thẻ:</Typography>
-                            <Typography>{cardInfo?.code}</Typography>
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                          >
-                            <Typography>Hạng thẻ:</Typography>
-                            <Typography>{cardInfo?.rank}</Typography>
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                          >
-                            <Typography>Trạng thái:</Typography>
-                            <Typography>
-                              {CARD_STATUS[cardInfo?.status]}
-                            </Typography>
-                          </Stack>
-                        </Stack>
-                      </Stack>
-                      <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <Button
-                          variant="contained"
-                          fullWidth
-                          onClick={handleCheckCard}
-                          disabled={activeStep > 1}
-                        >
-                          Tiếp tục
-                        </Button>
-                        <Button
-                          onClick={handleBack}
-                          variant="outlined"
-                          fullWidth
-                          disabled={activeStep > 1}
-                        >
-                          Trở lại
-                        </Button>
-                      </Stack>
-                    </Stack>
-                  )}
-                </Stack>
+                <CardInfo
+                  handleBackAction={handleBack}
+                  activeStep={activeStep}
+                  loading={loading}
+                  setLoadingAction={setLoading}
+                  cardCode={cardCode}
+                  setCardCodeAction={setCardCode}
+                  cardInfo={cardInfo}
+                  setCardInfoAction={setCardInfo}
+                  handleCheckCardAction={handleCheckCard}
+                  setShowErrorAction={setShowError}
+                  isEdit={isEdit}
+                />
               </StepContent>
             </Step>
             <Step active={activeStep === 2 || activeStep > 2}>
               <StepLabel>Ảnh khách hàng</StepLabel>
               <StepContent>
                 <Stack spacing={2}>
-                  {activeStep < 3 && (
+                  {(activeStep < 3 || isEdit) && (
                     <>
                       <Webcam
                         audio={false}
@@ -537,7 +285,11 @@ export default function Page() {
                         ref={webcamRef}
                         screenshotFormat="image/jpeg"
                         width="100%"
-                        videoConstraints={videoConstraints}
+                        videoConstraints={{
+                          width: 1280,
+                          height: 720,
+                          facingMode: 'user',
+                        }}
                         imageSmoothing
                         mirrored
                       />
@@ -628,13 +380,17 @@ export default function Page() {
           <Button
             fullWidth
             variant="contained"
-            onClick={submitData}
+            onClick={() => {
+              if (customerInfo?.rank === cardInfo?.rank) {
+                return setConfirmInfo(true)
+              }
+              return openSnackbar({
+                severity: 'error',
+                message: 'Hạng thành viên và hạng thẻ không trùng khớp',
+              })
+            }}
             disabled={
               (loading?.isLoading && loading?.type === 'submit') || !otp.length
-            }
-            startIcon={
-              loading?.isLoading &&
-              loading?.type === 'submit' && <CircularProgress size={20} />
             }
           >
             Phát hành thẻ
@@ -689,49 +445,119 @@ export default function Page() {
         </Stack>
       </ConfirmDialog>
       <ConfirmDialog
-        open={showError}
-        onClose={closeSuccessDialog}
-        title="Phát hành thẻ"
+        open={!!showError}
+        onClose={() => setShowError(null)}
+        title="Lỗi hệ thống"
         type="error"
+        size="xl"
       >
         <Stack spacing={1}>
-          <Stack alignItems="center" spacing={2}>
-            <Avatar
-              src={url ? url : undefined}
-              sx={{ width: 100, height: 100 }}
-            />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography>Status:</Typography>
+            <Typography color="error" fontWeight={600}>
+              {showError?.status}
+            </Typography>
+          </Stack>
+          <Container
+            dangerouslySetInnerHTML={{
+              __html: showError?.res
+                ? syntaxHighlight(JSON.stringify(showError.res, null, 4))
+                : '',
+            }}
+          />
+        </Stack>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={confirmInfo}
+        onClose={() => setConfirmInfo(false)}
+        title="Xác nhận thông tin"
+        size="sm"
+      >
+        <Stack spacing={2}>
+          <Stack spacing={1}>
+            <Stack alignItems="center" spacing={2}>
+              <Avatar
+                src={url ? url : undefined}
+                sx={{ width: 100, height: 100 }}
+              />
+            </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography>Mã khách hàng:</Typography>
+              <Typography>{customerInfo?.code}</Typography>
+            </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography>Họ và tên:</Typography>
+              <Typography>{customerInfo?.name}</Typography>
+            </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography>Số điện thoại:</Typography>
+              <Typography>{customerInfo?.contactNumber}</Typography>
+            </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography>Mã thẻ:</Typography>
+              <Typography>{cardInfo?.code}</Typography>
+            </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography>Hạng thẻ:</Typography>
+              <Typography>{cardInfo?.rank}</Typography>
+            </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography>Trạng thái:</Typography>
+              <Typography>{CARD_STATUS[cardInfo?.status as string]}</Typography>
+            </Stack>
           </Stack>
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
+            spacing={1}
           >
-            <Typography>Mã khách hàng:</Typography>
-            <Typography>{customerInfo?.code}</Typography>
-          </Stack>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography>Họ và tên:</Typography>
-            <Typography>{customerInfo?.name}</Typography>
-          </Stack>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography>Số điện thoại:</Typography>
-            <Typography>{customerInfo?.contactNumber}</Typography>
-          </Stack>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography>Hạng thẻ:</Typography>
-            <Typography>{cardInfo?.rank}</Typography>
+            <Button
+              fullWidth
+              variant="outlined"
+              disabled={loading?.isLoading && loading?.type === 'submit'}
+              onClick={handleEdit}
+            >
+              Chỉnh sửa
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={loading?.isLoading && loading?.type === 'submit'}
+              startIcon={
+                loading?.isLoading &&
+                loading?.type === 'submit' && (
+                  <CircularProgress size={20} sx={{ color: 'white' }} />
+                )
+              }
+              onClick={submitData}
+            >
+              Xác nhận
+            </Button>
           </Stack>
         </Stack>
       </ConfirmDialog>

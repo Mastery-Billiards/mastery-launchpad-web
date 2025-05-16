@@ -7,6 +7,6 @@ export const CARD_IMAGE_MAP: { [key: string]: string } = {
 
 export const CARD_STATUS: { [key: string]: string } = {
   INIT: 'Chưa kích hoạt',
-  INUSED: 'Đã kích hoạt',
+  INUSE: 'Đã kích hoạt',
   RETIRED: 'Đã vô hiệu hoá',
 }
