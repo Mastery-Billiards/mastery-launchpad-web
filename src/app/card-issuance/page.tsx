@@ -22,24 +22,9 @@ import BackButton from '@/app/components/shared/back-button'
 import CustomerInfo from '@/app/card-issuance/components/customer-info'
 import CardInfo from '@/app/card-issuance/components/card-info'
 import { Container } from '@/app/card-issuance/page.styled'
-import { CARD_STATUS } from '@/app/constant/card'
-
-export type Customer = {
-  name: string
-  contactNumber: string
-  birthDate: string
-  rank: string
-  gender: boolean
-  revision: string
-  code: string
-  isCardIssued: boolean
-}
-
-export type Card = {
-  code: string
-  rank: string
-  status: string
-}
+import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
+import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useFetchCard } from '@/app/hooks/use-fetch-card'
 
 export default function Page() {
   const openSnackbar = useSnackbar()
@@ -48,20 +33,28 @@ export default function Page() {
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
   const [cardCode, setCardCode] = useState<string>('')
-  const [customerInfo, setCustomerInfo] = useState<Customer | null>(null)
-  const [cardInfo, setCardInfo] = useState<Card | null>(null)
   const [loading, setLoading] = useState<{
     isLoading: boolean
     type: string
   } | null>(null)
   const [otp, setOtp] = useState<string>('')
   const [showSuccess, setShowSuccess] = useState<boolean>(false)
-  const [showError, setShowError] = useState<null | {
-    status: number
-    res: { string: { string: string } }
-  }>(null)
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
+  const { setError, error } = useCardIssuanceError()
+
+  const {
+    loading: customerLoading,
+    customerInfo,
+    setCustomerInfo,
+    fetchData: fetchCustomerData,
+  } = useFetchCustomer(phoneNumber)
+  const {
+    loading: cardLoading,
+    cardInfo,
+    setCardInfo,
+    fetchData: fetchCardData,
+  } = useFetchCard(cardCode)
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -98,7 +91,7 @@ export default function Page() {
           }
         )
         if (!res.ok) {
-          setShowError({
+          setError({
             status: res.status,
             res: await res.json(),
           })
@@ -122,7 +115,7 @@ export default function Page() {
         setLoading(null)
       }
     }
-  }, [cardInfo, customerInfo, url, otp, openSnackbar])
+  }, [cardInfo, customerInfo, url, otp, setError, openSnackbar])
   const requestOTP = useCallback(
     async (isResend?: boolean) => {
       if (!!cardInfo && !!customerInfo && url) {
@@ -142,7 +135,7 @@ export default function Page() {
             }
           )
           if (!res.ok) {
-            setShowError({
+            setError({
               status: res.status,
               res: await res.json(),
             })
@@ -168,7 +161,7 @@ export default function Page() {
         }
       }
     },
-    [cardInfo, customerInfo, url, openSnackbar]
+    [cardInfo, customerInfo, url, setError, openSnackbar]
   )
   const handleResetState = useCallback(() => {
     setUrl(null)
@@ -178,7 +171,8 @@ export default function Page() {
     setCustomerInfo(null)
     setCardInfo(null)
     setOtp('')
-  }, [])
+    setError(null)
+  }, [setCardInfo, setCustomerInfo, setError])
   const closeSuccessDialog = useCallback(() => {
     setShowSuccess(false)
     handleResetState()
@@ -244,14 +238,12 @@ export default function Page() {
                 <CustomerInfo
                   handleNextAction={handleNext}
                   activeStep={activeStep}
-                  setShowErrorAction={setShowError}
-                  loading={loading}
-                  setLoadingAction={setLoading}
+                  loading={customerLoading}
                   customerInfo={customerInfo}
-                  setCustomerInfoAction={setCustomerInfo}
                   phoneNumber={phoneNumber}
                   setPhoneNumberAction={setPhoneNumber}
                   isEdit={isEdit}
+                  fetchDataAction={fetchCustomerData}
                 />
               </StepContent>
             </Step>
@@ -261,15 +253,13 @@ export default function Page() {
                 <CardInfo
                   handleBackAction={handleBack}
                   activeStep={activeStep}
-                  loading={loading}
-                  setLoadingAction={setLoading}
+                  loading={cardLoading}
                   cardCode={cardCode}
                   setCardCodeAction={setCardCode}
                   cardInfo={cardInfo}
-                  setCardInfoAction={setCardInfo}
                   handleCheckCardAction={handleCheckCard}
-                  setShowErrorAction={setShowError}
                   isEdit={isEdit}
+                  fetchDataAction={fetchCardData}
                 />
               </StepContent>
             </Step>
@@ -400,7 +390,7 @@ export default function Page() {
       <ConfirmDialog
         open={showSuccess}
         onClose={closeSuccessDialog}
-        title="Phát hành thẻ"
+        title="Phát hành thẻ thành công"
         type="success"
       >
         <Stack spacing={1}>
@@ -445,8 +435,8 @@ export default function Page() {
         </Stack>
       </ConfirmDialog>
       <ConfirmDialog
-        open={!!showError}
-        onClose={() => setShowError(null)}
+        open={!!error}
+        onClose={() => setError(null)}
         title="Lỗi hệ thống"
         type="error"
         size="xl"
@@ -455,13 +445,13 @@ export default function Page() {
           <Stack direction="row" alignItems="center" spacing={1}>
             <Typography>Status:</Typography>
             <Typography color="error" fontWeight={600}>
-              {showError?.status}
+              {error?.status}
             </Typography>
           </Stack>
           <Container
             dangerouslySetInnerHTML={{
-              __html: showError?.res
-                ? syntaxHighlight(JSON.stringify(showError.res, null, 4))
+              __html: error?.res
+                ? syntaxHighlight(JSON.stringify(error.res, null, 4))
                 : '',
             }}
           />
@@ -520,14 +510,6 @@ export default function Page() {
             >
               <Typography>Hạng thẻ:</Typography>
               <Typography>{cardInfo?.rank}</Typography>
-            </Stack>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Typography>Trạng thái:</Typography>
-              <Typography>{CARD_STATUS[cardInfo?.status as string]}</Typography>
             </Stack>
           </Stack>
           <Stack
