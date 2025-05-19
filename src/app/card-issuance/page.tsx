@@ -25,6 +25,7 @@ import { Container } from '@/app/card-issuance/page.styled'
 import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
 import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
 import { useFetchCard } from '@/app/hooks/use-fetch-card'
+import { syntaxHighlight } from '@/app/utils/string'
 
 export default function Page() {
   const openSnackbar = useSnackbar()
@@ -186,31 +187,6 @@ export default function Page() {
       message: 'Hạng thành viên và hạng thẻ không trùng khớp',
     })
   }, [cardInfo?.rank, customerInfo?.rank, openSnackbar])
-
-  const syntaxHighlight = useCallback((json: string) => {
-    const newJson = json
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-    return newJson.replace(
-      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-      function (match: string) {
-        let cls = 'number'
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'key'
-          } else {
-            cls = 'string'
-          }
-        } else if (/true|false/.test(match)) {
-          cls = 'boolean'
-        } else if (/null/.test(match)) {
-          cls = 'null'
-        }
-        return '<span class="' + cls + '">' + match + '</span>'
-      }
-    )
-  }, [])
 
   const handleEdit = useCallback(() => {
     setConfirmInfo(false)
