@@ -16,7 +16,6 @@ import {
 } from '@mui/material'
 import Webcam from 'react-webcam'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
-import { dataURLtoBlob } from '@/app/utils/image'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
 import BackButton from '@/app/components/shared/back-button'
 import CustomerInfo from '@/app/card-issuance/components/customer-info'
@@ -26,6 +25,8 @@ import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
 import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
 import { useFetchCard } from '@/app/hooks/use-fetch-card'
 import { syntaxHighlight } from '@/app/utils/string'
+import { useRequestOtp } from '@/app/hooks/use-request-otp'
+import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
 
 export default function Page() {
   const openSnackbar = useSnackbar()
@@ -56,6 +57,8 @@ export default function Page() {
     setCardInfo,
     fetchData: fetchCardData,
   } = useFetchCard(cardCode)
+  const { requestOTPFn } = useRequestOtp()
+  const { submit } = useSubmitCardIssue()
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -70,100 +73,34 @@ export default function Page() {
       return setUrl(imageSrc)
     }
   }, [webcamRef])
+
   const submitData = useCallback(async () => {
     if (!!cardInfo && !!customerInfo && url) {
-      setLoading({ isLoading: true, type: 'submit' })
-      try {
-        const formData = new FormData()
-        formData.append('revision', customerInfo.revision)
-        formData.append('newCode', cardInfo.code)
-        const blob = dataURLtoBlob(url)
-        formData.append(
-          'avatar',
-          blob,
-          `avatar_${customerInfo.contactNumber}.jpg`
-        )
-        formData.append('otp', otp)
-        const res = await fetch(
-          `http://103.90.226.218:8080/api/v1/mastery/customers/${customerInfo.code}/membership/cards/issue`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        )
-        if (!res.ok) {
-          setError({
-            status: res.status,
-            res: await res.json(),
-          })
-        } else {
-          setShowSuccess(true)
-          openSnackbar({
-            severity: 'success',
-            message: 'Phát hành thẻ thành công',
-          })
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          openSnackbar({ severity: 'error', message: err.message })
-        } else {
-          openSnackbar({
-            severity: 'error',
-            message: `'An unexpected error occurred:', ${err}`,
-          })
-        }
-      } finally {
-        setLoading(null)
-      }
+      submit(
+        customerInfo.code,
+        customerInfo.revision,
+        cardInfo.code,
+        url,
+        otp,
+        customerInfo.contactNumber
+      )
+      setShowSuccess(true)
     }
-  }, [cardInfo, customerInfo, url, otp, setError, openSnackbar])
+  }, [cardInfo, customerInfo, url, submit, otp])
+
   const requestOTP = useCallback(
-    async (isResend?: boolean) => {
+    (isResend?: boolean) => {
       if (!!cardInfo && !!customerInfo && url) {
-        setLoading({ isLoading: true, type: isResend ? 'resend' : 'otp' })
         if (isResend) {
           setOtp('')
         }
-        try {
-          const res = await fetch(
-            'http://103.90.226.218:8080/api/v1/mastery/otp/send',
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ phoneNumber: customerInfo.contactNumber }),
-            }
-          )
-          if (!res.ok) {
-            setError({
-              status: res.status,
-              res: await res.json(),
-            })
-          } else {
-            openSnackbar({
-              severity: 'success',
-              message: isResend
-                ? 'Gửi lại mã OTP đến Zalo khách hàng thành công'
-                : 'Gửi mã OTP đến Zalo của khách hàng thành công',
-            })
-          }
-        } catch (err: unknown) {
-          if (err instanceof Error) {
-            openSnackbar({ severity: 'error', message: err.message })
-          } else {
-            openSnackbar({
-              severity: 'error',
-              message: `'An unexpected error occurred:', ${err}`,
-            })
-          }
-        } finally {
-          setLoading(null)
-        }
+        setLoading({ isLoading: true, type: isResend ? 'resend' : 'otp' })
+        return requestOTPFn(customerInfo.contactNumber, isResend)
       }
     },
-    [cardInfo, customerInfo, url, setError, openSnackbar]
+    [cardInfo, customerInfo, url, requestOTPFn]
   )
+
   const handleResetState = useCallback(() => {
     setUrl(null)
     setActiveStep(0)
@@ -174,10 +111,12 @@ export default function Page() {
     setOtp('')
     setError(null)
   }, [setCardInfo, setCustomerInfo, setError])
+
   const closeSuccessDialog = useCallback(() => {
     setShowSuccess(false)
     handleResetState()
   }, [handleResetState])
+
   const handleCheckCard = useCallback(() => {
     if (customerInfo?.rank === cardInfo?.rank) {
       return handleNext()

@@ -11,3 +11,19 @@ export const getCard = async (cardCode: string): Promise<Card> => {
   )
   return data
 }
+
+export const submitCardIssue = async (
+  customerCode: string,
+  formData: FormData
+): Promise<Card> => {
+  const { data } = await client.post(
+    `${baseUrl()}/customers/${customerCode}/membership/cards/issue`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: formData,
+    }
+  )
+  return data
+}
