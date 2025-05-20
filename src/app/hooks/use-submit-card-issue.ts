@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
 import { dataURLtoBlob } from '@/app/utils/image'
@@ -7,6 +7,10 @@ import { submitCardIssue } from '@/app/service/card'
 export function useSubmitCardIssue() {
   const openSnackbar = useSnackbar()
   const { setError } = useCardIssuanceError()
+  const [loading, setLoading] = useState<{
+    isLoading: boolean
+    type: string
+  } | null>(null)
 
   const submit = useCallback(
     (
@@ -17,6 +21,7 @@ export function useSubmitCardIssue() {
       otp: string,
       customerPhone: string
     ) => {
+      setLoading({ isLoading: true, type: 'submit' })
       const formData = new FormData()
       formData.append('revision', customerRevision)
       formData.append('newCode', cardCode)
@@ -29,17 +34,20 @@ export function useSubmitCardIssue() {
             severity: 'success',
             message: 'Phát hành thẻ thành công',
           })
+          setLoading(null)
         })
         .catch((e) => {
           setError({
             status: e?.response?.status,
             res: e.response,
           })
+          setLoading(null)
         })
     },
     [openSnackbar, setError]
   )
   return {
     submit,
+    loading,
   }
 }

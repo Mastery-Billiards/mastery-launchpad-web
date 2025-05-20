@@ -35,10 +35,6 @@ export default function Page() {
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
   const [cardCode, setCardCode] = useState<string>('')
-  const [loading, setLoading] = useState<{
-    isLoading: boolean
-    type: string
-  } | null>(null)
   const [otp, setOtp] = useState<string>('')
   const [showSuccess, setShowSuccess] = useState<boolean>(false)
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
@@ -57,8 +53,8 @@ export default function Page() {
     setCardInfo,
     fetchData: fetchCardData,
   } = useFetchCard(cardCode)
-  const { requestOTPFn } = useRequestOtp()
-  const { submit } = useSubmitCardIssue()
+  const { requestOTPFn, loading: otpLoading } = useRequestOtp()
+  const { submit, loading: submitLoading } = useSubmitCardIssue()
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -94,7 +90,6 @@ export default function Page() {
         if (isResend) {
           setOtp('')
         }
-        setLoading({ isLoading: true, type: isResend ? 'resend' : 'otp' })
         return requestOTPFn(customerInfo.contactNumber, isResend)
       }
     },
@@ -238,7 +233,7 @@ export default function Page() {
               <StepLabel>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <span>OTP</span>
-                  {loading?.isLoading && loading?.type === 'otp' && (
+                  {otpLoading?.isLoading && otpLoading?.type === 'otp' && (
                     <CircularProgress size={16} />
                   )}
                 </Stack>
@@ -267,7 +262,7 @@ export default function Page() {
                     justifyContent="flex-end"
                     spacing={1}
                   >
-                    {loading?.isLoading && loading?.type === 'resend' && (
+                    {otpLoading?.isLoading && otpLoading?.type === 'resend' && (
                       <CircularProgress size={16} />
                     )}
                     <Link
@@ -295,7 +290,8 @@ export default function Page() {
               })
             }}
             disabled={
-              (loading?.isLoading && loading?.type === 'submit') || !otp.length
+              (submitLoading?.isLoading && submitLoading?.type === 'submit') ||
+              !otp.length
             }
           >
             Phát hành thẻ
@@ -436,7 +432,9 @@ export default function Page() {
             <Button
               fullWidth
               variant="outlined"
-              disabled={loading?.isLoading && loading?.type === 'submit'}
+              disabled={
+                submitLoading?.isLoading && submitLoading?.type === 'submit'
+              }
               onClick={handleEdit}
             >
               Chỉnh sửa
@@ -444,10 +442,12 @@ export default function Page() {
             <Button
               fullWidth
               variant="contained"
-              disabled={loading?.isLoading && loading?.type === 'submit'}
+              disabled={
+                submitLoading?.isLoading && submitLoading?.type === 'submit'
+              }
               startIcon={
-                loading?.isLoading &&
-                loading?.type === 'submit' && (
+                submitLoading?.isLoading &&
+                submitLoading?.type === 'submit' && (
                   <CircularProgress size={20} sx={{ color: 'white' }} />
                 )
               }
