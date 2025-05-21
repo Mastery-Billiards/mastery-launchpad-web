@@ -35,7 +35,7 @@ export default function RootLayout({
           <React.Suspense fallback={<LinearProgress />}>
             <ThemeProvider theme={theme}>
               <SnackbarProvider>
-                <Layout>{children}</Layout>
+                {pathname === '/login' ? children : <Layout>{children}</Layout>}
               </SnackbarProvider>
             </ThemeProvider>
           </React.Suspense>

@@ -1,7 +1,15 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
+
+const envVars = {
+  HOST: 'http://103.90.226.218:8080',
+}
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  env: envVars,
+  reactStrictMode: true,
+  serverRuntimeConfig: {
+    mySecret: envVars.HOST,
+  },
+}
 
-export default nextConfig;
+export default nextConfig

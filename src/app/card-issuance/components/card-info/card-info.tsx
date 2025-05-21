@@ -1,12 +1,6 @@
 'use client'
 import React, { FC } from 'react'
-import {
-  Stack,
-  TextField,
-  Button,
-  Typography,
-  CircularProgress,
-} from '@mui/material'
+import { Stack, TextField, Button, Typography } from '@mui/material'
 import Image from 'next/image'
 import { CARD_IMAGE_MAP, CARD_STATUS } from '@/app/constant/card'
 import { Card } from '@/app/service/card/card.entity'
@@ -52,7 +46,8 @@ export const CardInfo: FC<CardInfoProps> = ({
           disabled={
             ((loading || activeStep > 1) && !isEdit) || !cardCode.length
           }
-          startIcon={loading && <CircularProgress size={20} />}
+          loading={loading}
+          loadingPosition="start"
           sx={{ minWidth: 'max-content' }}
         >
           Xác nhận

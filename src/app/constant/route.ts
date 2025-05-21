@@ -5,5 +5,6 @@ export const ROUTES_TITLE: { [key: string]: string } = {
 
 export const ROUTES_HEAD: { [key: string]: string } = {
   '/': 'Launchpad',
-  '/card-issuance': 'Launchpad - Phát hành thẻ',
+  '/login': 'Launchpad | Đăng nhập',
+  '/card-issuance': 'Launchpad | Phát hành thẻ',
 }

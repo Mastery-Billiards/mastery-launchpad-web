@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const client = axios.create({
-  baseURL: 'http://103.90.226.218:8080/',
+  baseURL: process.env.HOST,
   headers: {
     Accept: '*/*',
     'Access-Control-Allow-Origin': '*',
@@ -11,4 +11,4 @@ export const client = axios.create({
   },
 })
 
-export const baseUrl = () => `http://103.90.226.218:8080/api/v1/mastery`
+export const baseUrl = () => `${process.env.HOST}/api/v1/mastery`

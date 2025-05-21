@@ -1,12 +1,6 @@
 'use client'
 import React, { FC } from 'react'
-import {
-  Stack,
-  TextField,
-  Button,
-  Typography,
-  CircularProgress,
-} from '@mui/material'
+import { Stack, TextField, Button, Typography } from '@mui/material'
 import { format } from 'date-fns'
 import { Customer } from '@/app/service/customer/customer.entity'
 
@@ -49,7 +43,8 @@ export const CustomerInfo: FC<CustomerInfoProps> = ({
           disabled={
             ((loading || activeStep > 0) && !isEdit) || !phoneNumber.length
           }
-          startIcon={loading && <CircularProgress size={20} />}
+          loading={loading}
+          loadingPosition="start"
           sx={{ minWidth: 'max-content' }}
         >
           Xác nhận

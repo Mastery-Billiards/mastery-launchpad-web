@@ -445,12 +445,10 @@ export default function Page() {
               disabled={
                 submitLoading?.isLoading && submitLoading?.type === 'submit'
               }
-              startIcon={
-                submitLoading?.isLoading &&
-                submitLoading?.type === 'submit' && (
-                  <CircularProgress size={20} sx={{ color: 'white' }} />
-                )
+              loading={
+                submitLoading?.isLoading && submitLoading?.type === 'submit'
               }
+              loadingPosition="start"
               onClick={submitData}
             >
               Xác nhận
