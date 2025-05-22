@@ -12,3 +12,4 @@ export const client = axios.create({
 })
 
 export const baseUrl = () => `${process.env.HOST}/api/v1/mastery`
+export const baseAuthUrl = () => `${process.env.HOST}/api/v1/auth`

@@ -1,5 +1,5 @@
 export const ROUTES_TITLE: { [key: string]: string } = {
-  '/': 'Launchpad',
+  '/': 'Mastery Launchpad',
   '/card-issuance': 'Phát hành thẻ',
 }
 

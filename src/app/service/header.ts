@@ -10,10 +10,9 @@ export const updateAuthString = () => {
 updateAuthString()
 
 export const authHeader = {
+  'Content-Type': 'application/json',
   Authorization: authString,
-  // 'Content-Type': 'application/x-www-form-urlencoded',
 }
 export const postHeader = {
   Authorization: authString,
-  // 'Content-Type': 'application/json',
 }

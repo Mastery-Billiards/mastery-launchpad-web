@@ -6,7 +6,11 @@ export const requestOTP = async (phoneNumber: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ phoneNumber: phoneNumber }),
+    body: JSON.stringify({
+      recipient: phoneNumber,
+      channel: 'ZNS',
+      context: 'card_issuance',
+    }),
   })
   return data
 }
