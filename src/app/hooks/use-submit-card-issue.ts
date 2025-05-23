@@ -19,7 +19,8 @@ export function useSubmitCardIssue() {
       cardCode: string,
       imgUrl: string,
       otp: string,
-      customerPhone: string
+      customerPhone: string,
+      contextKey: string
     ) => {
       setLoading({ isLoading: true, type: 'submit' })
       const formData = new FormData()
@@ -28,6 +29,7 @@ export function useSubmitCardIssue() {
       const blob = dataURLtoBlob(imgUrl)
       formData.append('avatar', blob, `avatar_${customerPhone}.jpg`)
       formData.append('otp', otp)
+      formData.append('otpContextKey', contextKey)
       submitCardIssue(customerCode, formData)
         .then(() => {
           openSnackbar({

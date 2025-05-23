@@ -53,7 +53,7 @@ export default function Page() {
     setCardInfo,
     fetchData: fetchCardData,
   } = useFetchCard(cardCode)
-  const { requestOTPFn, loading: otpLoading } = useRequestOtp()
+  const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
   const { submit, loading: submitLoading } = useSubmitCardIssue()
 
   const handleNext = () => {
@@ -78,11 +78,12 @@ export default function Page() {
         cardInfo.code,
         url,
         otp,
-        customerInfo.contactNumber
+        customerInfo.contactNumber,
+        contextKey
       )
       setShowSuccess(true)
     }
-  }, [cardInfo, customerInfo, url, submit, otp])
+  }, [cardInfo, customerInfo, url, submit, otp, contextKey])
 
   const requestOTP = useCallback(
     (isResend?: boolean) => {

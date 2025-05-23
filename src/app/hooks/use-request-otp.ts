@@ -10,18 +10,20 @@ export function useRequestOtp() {
     isLoading: boolean
     type: string
   } | null>(null)
+  const [contextKey, setContextKey] = useState<string>('')
 
   const requestOTPFn = useCallback(
     (phoneNumber: string, isResend?: boolean) => {
       setLoading({ isLoading: true, type: isResend ? 'resend' : 'otp' })
       requestOTP(phoneNumber)
-        .then(() => {
+        .then((data) => {
           openSnackbar({
             severity: 'success',
             message: isResend
               ? 'Gửi lại mã OTP đến Zalo khách hàng thành công'
               : 'Gửi mã OTP đến Zalo của khách hàng thành công',
           })
+          setContextKey(data.contextKey)
           setLoading(null)
         })
         .catch((e) => {
@@ -35,6 +37,7 @@ export function useRequestOtp() {
     [openSnackbar, setError]
   )
   return {
+    contextKey,
     requestOTPFn,
     loading,
   }
