@@ -21,8 +21,8 @@ export const BackButton: React.FC = () => {
       onClick={() => router.push('/')}
       position="absolute"
       zIndex={10}
-      left={{ xs: 30, md: 50 }}
-      top={{ xs: 105, md: 120 }}
+      left={{ xs: 20, md: 50 }}
+      top={{ xs: 90, md: 108 }}
     >
       <ArrowBackIosIcon />
     </Stack>

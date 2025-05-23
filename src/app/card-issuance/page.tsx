@@ -131,7 +131,8 @@ export default function Page() {
     <>
       <BackButton />
       <Stack
-        py={4}
+        py={{ xs: 6, md: 4 }}
+        px={1.5}
         spacing={{ xs: 2, md: 4 }}
         alignItems="center"
         justifyContent="center"
