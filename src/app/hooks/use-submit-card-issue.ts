@@ -28,7 +28,7 @@ export function useSubmitCardIssue() {
       formData.append('newCode', cardCode)
       const blob = dataURLtoBlob(imgUrl)
       formData.append('avatar', blob, `avatar_${customerPhone}.jpg`)
-      formData.append('otp', otp)
+      formData.append('otpValue', otp)
       formData.append('otpContextKey', contextKey)
       submitCardIssue(customerCode, formData)
         .then(() => {
