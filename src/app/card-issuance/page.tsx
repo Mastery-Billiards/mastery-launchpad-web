@@ -36,7 +36,6 @@ export default function Page() {
   const [phoneNumber, setPhoneNumber] = useState<string>('')
   const [cardCode, setCardCode] = useState<string>('')
   const [otp, setOtp] = useState<string>('')
-  const [showSuccess, setShowSuccess] = useState<boolean>(false)
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
   const { setError, error } = useCardIssuanceError()
@@ -54,7 +53,7 @@ export default function Page() {
     fetchData: fetchCardData,
   } = useFetchCard(cardCode)
   const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
-  const { submit, loading: submitLoading } = useSubmitCardIssue()
+  const { submit, loading: submitLoading, showSuccess, setShowSuccess } = useSubmitCardIssue()
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -81,7 +80,6 @@ export default function Page() {
         customerInfo.contactNumber,
         contextKey
       )
-      setShowSuccess(true)
     }
   }, [cardInfo, customerInfo, url, submit, otp, contextKey])
 
@@ -111,7 +109,7 @@ export default function Page() {
   const closeSuccessDialog = useCallback(() => {
     setShowSuccess(false)
     handleResetState()
-  }, [handleResetState])
+  }, [handleResetState, setShowSuccess])
 
   const handleCheckCard = useCallback(() => {
     if (customerInfo?.rank === cardInfo?.rank) {

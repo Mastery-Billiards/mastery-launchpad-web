@@ -11,6 +11,7 @@ export function useSubmitCardIssue() {
     isLoading: boolean
     type: string
   } | null>(null)
+  const [showSuccess, setShowSuccess] = useState<boolean>(false)
 
   const submit = useCallback(
     (
@@ -36,6 +37,7 @@ export function useSubmitCardIssue() {
             severity: 'success',
             message: 'Phát hành thẻ thành công',
           })
+          setShowSuccess(true)
           setLoading(null)
         })
         .catch((e) => {
@@ -51,5 +53,7 @@ export function useSubmitCardIssue() {
   return {
     submit,
     loading,
+    showSuccess,
+    setShowSuccess,
   }
 }
