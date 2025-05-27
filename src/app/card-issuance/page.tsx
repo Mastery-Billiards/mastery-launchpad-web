@@ -94,40 +94,9 @@ export default function Page() {
             const eyeSlope = eyeDeltaY / eyeDeltaX
             if (eyeSlope < 0.1) {
               frontalCount++
-              const points = landmarks.positions
 
               const box = det.detection.box
               const cornerLen = 25
-
-              // === DRAW WHITE FACIAL LINES ===
-              context.strokeStyle = 'white'
-              context.lineWidth = 1.5
-              const connectPairs = [
-                [36, 39],
-                [42, 45], // eyes horizontal
-                [36, 42], // between eyes
-                [30, 33],
-                [27, 30], // nose bridge
-                [48, 54], // mouth width
-                [54, 57],
-                [48, 57], // mouth corners
-                [6, 10], // jawline
-              ]
-
-              connectPairs.forEach(([i, j]) => {
-                context.beginPath()
-                context.moveTo(points[i].x, points[i].y)
-                context.lineTo(points[j].x, points[j].y)
-                context.stroke()
-              })
-
-              // === DRAW WHITE LANDMARK DOTS ===
-              context.fillStyle = 'white'
-              points.forEach((point) => {
-                context.beginPath()
-                context.arc(point.x, point.y, 2.5, 0, 2 * Math.PI)
-                context.fill()
-              })
 
               // === DRAW GREEN CORNER BRACKETS ===
               context.strokeStyle = '#00FF66' // bright green
@@ -267,32 +236,6 @@ export default function Page() {
 
   return (
     <>
-      {/*<Box position="relative" width={500} height={500}>*/}
-      {/*  <Webcam*/}
-      {/*    audio={false}*/}
-      {/*    ref={webcamRef}*/}
-      {/*    screenshotFormat="image/jpeg"*/}
-      {/*    videoConstraints={{*/}
-      {/*      facingMode: 'user',*/}
-      {/*    }}*/}
-      {/*    imageSmoothing*/}
-      {/*    style={{*/}
-      {/*      zIndex: 1,*/}
-      {/*      position: 'absolute',*/}
-      {/*      width: '100%',*/}
-      {/*      height: '100%',*/}
-      {/*    }}*/}
-      {/*  />*/}
-      {/*  <canvas*/}
-      {/*    ref={canvasRef}*/}
-      {/*    style={{*/}
-      {/*      zIndex: 2,*/}
-      {/*      position: 'absolute',*/}
-      {/*      width: '100%',*/}
-      {/*      height: '100%',*/}
-      {/*    }}*/}
-      {/*  />*/}
-      {/*</Box>*/}
       <Stack
         py={{ xs: 6, md: 4 }}
         px={1.5}
@@ -343,14 +286,12 @@ export default function Page() {
                 <Stack spacing={2}>
                   {(activeStep < 3 || isEdit) && (
                     <>
-                      <Box position="relative" width={500} height={500}>
+                      <Box position="relative" width={400} height={400}>
                         <Webcam
                           audio={false}
                           ref={webcamRef}
                           screenshotFormat="image/jpeg"
-                          videoConstraints={{
-                            facingMode: 'user',
-                          }}
+                          videoConstraints={{ facingMode: 'user' }}
                           imageSmoothing
                           style={{
                             zIndex: 1,
@@ -359,6 +300,29 @@ export default function Page() {
                             height: '100%',
                           }}
                         />
+                        <Stack
+                          alignItems="center"
+                          position="absolute"
+                          justifyContent="flex-start"
+                          zIndex={2}
+                          width="100%"
+                          height="100%"
+                          top={16}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="230"
+                            height="320"
+                            viewBox="0 0 768 768"
+                          >
+                            <path
+                              d="M384,96c-70,0-134,20-184,58s-84,93-92,160c-5,41,0,84,4,108-7-5-14-5-18-2s-7,10-9,16c-10,30-6,60,8,86,10,20,15,31,15,52,0,16,6,26,13,30,4,2,9,3,15,2,1,21,7,46,18,72,21,54,46,86,102,131,48,40,92,56,145,56s97-16,145-56c56-45,81-77,102-131,11-26,17-51,18-72,6,1,11,0,15-2,7-4,13-14,17-30,4-21,9-32,15-52,14-26,18-56,8-86-2-6-4-12-9-16s-11-3-18,2c4-24,9-67,4-108-8-67-42-123-92-160S454,96,384,96z"
+                              fill="none"
+                              stroke="#ffffff"
+                              strokeWidth="3"
+                            />
+                          </svg>
+                        </Stack>
                         <canvas
                           ref={canvasRef}
                           style={{
