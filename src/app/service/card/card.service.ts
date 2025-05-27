@@ -30,17 +30,3 @@ export const submitCardIssue = async (
   )
   return data
 }
-
-// export const submitCardIssue = async (
-//   customerCode: string,
-//   formData: FormData
-// ): Promise<Card> => {
-//   const data = await fetch(
-//     `${baseUrl()}/customers/${customerCode}/membership/cards/issue`,
-//     {
-//       method: 'POST',
-//       body: formData,
-//     }
-//   )
-//   return data.json()
-// }
