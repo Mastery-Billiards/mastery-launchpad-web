@@ -19,7 +19,6 @@ import Webcam from 'react-webcam'
 import * as faceapi from 'face-api.js'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
-import BackButton from '@/app/components/shared/back-button'
 import CustomerInfo from '@/app/card-issuance/components/customer-info'
 import CardInfo from '@/app/card-issuance/components/card-info'
 import { Container } from '@/app/card-issuance/page.styled'
@@ -294,7 +293,6 @@ export default function Page() {
       {/*    }}*/}
       {/*  />*/}
       {/*</Box>*/}
-      <BackButton />
       <Stack
         py={{ xs: 6, md: 4 }}
         px={1.5}

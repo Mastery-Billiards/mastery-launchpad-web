@@ -21,6 +21,8 @@ import { useUserInfo } from '@/app/stores/auth.store'
 import { ROLE } from '@/app/constant/role'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useLogout } from '@/app/hooks/use-logout'
+import Link from 'next/link'
+import CustomBreadcrumbs from '@/app/components/shared/breadcrums'
 
 interface DefaultLayoutProps {
   children?: ReactNode
@@ -29,7 +31,7 @@ interface DefaultLayoutProps {
 const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
   const isMobile = useResponsiveValue({ xs: true, md: false })
   const pathname = usePathname()
-  const { loading, logout } = useLogout()
+  const { logout } = useLogout()
   const { info } = useUserInfo()
   const anchorRef = useRef<HTMLButtonElement | null>(null)
   const [openPopover, setOpenPopover] = useState<boolean>(false)
@@ -44,12 +46,14 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
             alignItems="center"
             justifyContent="space-between"
           >
-            <Image
-              src="/logo-black-bg.png"
-              alt="logo"
-              width={140}
-              height={70}
-            />
+            <Link href="/">
+              <Image
+                src="/logo-black-bg.png"
+                alt="logo"
+                width={140}
+                height={70}
+              />
+            </Link>
             {!isMobile && (
               <Typography
                 fontWeight={600}
@@ -79,8 +83,15 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
             </Stack>
           </Stack>
         </Toolbar>
+        {pathname !== '/' && (
+          <Box width="100%" bgcolor="white" maxHeight={30} px={5} py={0.5}>
+            <CustomBreadcrumbs />
+          </Box>
+        )}
       </AppBar>
-      <Box minHeight="calc(100vh - 70px - 50px)">{children}</Box>
+      <Box minHeight={`calc(100vh - ${pathname !== '/' ? 103 : 74}px - 50px)`}>
+        {children}
+      </Box>
       <Stack
         alignItems="center"
         justifyContent="center"
