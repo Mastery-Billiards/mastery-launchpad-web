@@ -1,9 +1,8 @@
 'use client'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import OtpInput from 'react-otp-input'
 import {
-  Avatar,
-  Box,
+  Avatar as MuiAvatar,
   Button,
   CircularProgress,
   Divider,
@@ -15,8 +14,6 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import Webcam from 'react-webcam'
-import * as faceapi from 'face-api.js'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
 import CustomerInfo from '@/app/card-issuance/components/customer-info'
@@ -28,18 +25,10 @@ import { useFetchCard } from '@/app/hooks/use-fetch-card'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
 import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
-import Image from 'next/image'
-import faceIcon from '../../../public/face-overlay.svg'
+import Avatar from '@/app/card-issuance/components/avatar'
 
 export default function Page() {
   const openSnackbar = useSnackbar()
-  const webcamRef = useRef<Webcam>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [modelsLoaded, setModelsLoaded] = useState(false)
-  const [statusMessage, setStatusMessage] = useState(
-    'Đang tải mô hình nhận diện...'
-  )
-  const [isEnableCapture, setEnableCapture] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
@@ -48,129 +37,6 @@ export default function Page() {
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
   const { setError, error } = useCardIssuanceError()
-
-  useEffect(() => {
-    const loadModels = async () => {
-      const MODEL_URL = '/models'
-      await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-      ])
-      setModelsLoaded(true)
-      setStatusMessage('Hệ thống đã sẵn sàng. Vui lòng nhìn vào camera.')
-    }
-    loadModels()
-  }, [])
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout
-
-    if (modelsLoaded) {
-      intervalId = setInterval(async () => {
-        const webcam = webcamRef.current
-        const canvas = canvasRef.current
-
-        if (webcam && webcam.video && canvas && canvas.getContext) {
-          const video = webcam.video
-          const context = canvas.getContext('2d')
-          if (!video || !context) return
-          const displaySize = {
-            width: video.offsetWidth,
-            height: video.offsetHeight,
-          }
-          faceapi.matchDimensions(canvas, displaySize)
-          const detections = await faceapi
-            .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-          const resizedDetections = faceapi.resizeResults(
-            detections,
-            displaySize
-          )
-          context.clearRect(0, 0, canvas.width, canvas.height)
-          setEnableCapture(false)
-          if (detections.length === 0) {
-            setStatusMessage('Không phát hiện khuôn mặt, hãy nhìn vào camera')
-          } else if (detections.length > 1) {
-            setStatusMessage('Phát hiện nhiều hơn một khuôn mặt')
-          } else if (detections.length === 1) {
-            resizedDetections.forEach((det) => {
-              const landmarks = det.landmarks
-              const leftEye = landmarks.getLeftEye()
-              const rightEye = landmarks.getRightEye()
-              const eyeDeltaX = Math.abs(leftEye[0].x - rightEye[3].x)
-              const eyeDeltaY = Math.abs(leftEye[0].y - rightEye[3].y)
-              // Basic check: eyes roughly horizontal
-              const eyeSlope = eyeDeltaY / eyeDeltaX
-              if (eyeSlope < 0.1) {
-                const centerBoxWidth = displaySize.width * 0.4
-                const centerBoxHeight = displaySize.height * 0.4
-                const centerBoxX = (displaySize.width - centerBoxWidth) / 2.2
-                const centerBoxY = (displaySize.height - centerBoxHeight) / 2.2
-                const faceBox = detections[0].detection.box
-                const faceCenterX = faceBox.x + faceBox.width / 2.2
-                const faceCenterY = faceBox.y + faceBox.height / 2.2
-                const isCentered =
-                  faceCenterX > centerBoxX &&
-                  faceCenterX < centerBoxX + centerBoxWidth &&
-                  faceCenterY > centerBoxY &&
-                  faceCenterY < centerBoxY + centerBoxHeight
-                if (isCentered) {
-                  setStatusMessage('Phát hiện một khuôn mặt ✔')
-                  const box = det.detection.box
-                  const cornerLen = 25
-                  // === DRAW GREEN CORNER BRACKETS ===
-                  context.strokeStyle = '#00FF66' // bright green
-                  context.lineWidth = 2
-                  // Top-left
-                  context.beginPath()
-                  context.moveTo(box.x, box.y + cornerLen)
-                  context.lineTo(box.x, box.y)
-                  context.lineTo(box.x + cornerLen, box.y)
-                  context.stroke()
-                  // Top-right
-                  context.beginPath()
-                  context.moveTo(box.x + box.width - cornerLen, box.y)
-                  context.lineTo(box.x + box.width, box.y)
-                  context.lineTo(box.x + box.width, box.y + cornerLen)
-                  context.stroke()
-                  // Bottom-left
-                  context.beginPath()
-                  context.moveTo(box.x, box.y + box.height - cornerLen)
-                  context.lineTo(box.x, box.y + box.height)
-                  context.lineTo(box.x + cornerLen, box.y + box.height)
-                  context.stroke()
-                  // Bottom-right
-                  context.beginPath()
-                  context.moveTo(
-                    box.x + box.width - cornerLen,
-                    box.y + box.height
-                  )
-                  context.lineTo(box.x + box.width, box.y + box.height)
-                  context.lineTo(
-                    box.x + box.width,
-                    box.y + box.height - cornerLen
-                  )
-                  context.stroke()
-                  setEnableCapture(true)
-                } else {
-                  setStatusMessage(
-                    'Vui lòng điều chỉnh để khuôn mặt nằm giữa khung.'
-                  )
-                }
-              } else {
-                setStatusMessage(
-                  'Vui lòng điều chỉnh để khuôn mặt nằm giữa khung.'
-                )
-              }
-            })
-          }
-        }
-      }, 0)
-    }
-
-    return () => clearInterval(intervalId)
-  }, [modelsLoaded])
 
   const {
     loading: customerLoading,
@@ -198,13 +64,6 @@ export default function Page() {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
-
-  const capture = useCallback(() => {
-    const imageSrc = webcamRef.current?.getScreenshot()
-    if (imageSrc) {
-      return setUrl(imageSrc)
-    }
-  }, [webcamRef])
 
   const submitData = useCallback(async () => {
     if (!!cardInfo && !!customerInfo && url) {
@@ -312,90 +171,17 @@ export default function Page() {
             <Step active={activeStep === 2 || activeStep > 2}>
               <StepLabel>Ảnh khách hàng</StepLabel>
               <StepContent>
-                <Stack spacing={2}>
-                  {(activeStep < 3 || isEdit) && (
-                    <>
-                      <Box position="relative" width="100%" height={400}>
-                        <Typography>{statusMessage}</Typography>
-                        {modelsLoaded && (
-                          <>
-                            <Webcam
-                              audio={false}
-                              ref={webcamRef}
-                              screenshotFormat="image/jpeg"
-                              videoConstraints={{ facingMode: 'user' }}
-                              imageSmoothing
-                              style={{
-                                zIndex: 1,
-                                position: 'absolute',
-                                width: '100%',
-                                height: '100%',
-                              }}
-                            />
-                            <Stack
-                              alignItems="center"
-                              position="absolute"
-                              zIndex={2}
-                              width="100%"
-                              height="100%"
-                            >
-                              <Image
-                                priority
-                                src={faceIcon}
-                                alt="face overlay"
-                                style={{ width: '80%' }}
-                              />
-                            </Stack>
-                            <canvas
-                              ref={canvasRef}
-                              style={{
-                                zIndex: 2,
-                                position: 'absolute',
-                                width: '100%',
-                                height: '100%',
-                              }}
-                            />
-                          </>
-                        )}
-                      </Box>
-                      <Button
-                        variant="contained"
-                        onClick={capture}
-                        disabled={!isEnableCapture}
-                      >
-                        Chụp ảnh
-                      </Button>
-                    </>
-                  )}
-                  {url && (
-                    <Stack spacing={2}>
-                      <Stack alignItems="center">
-                        <Avatar src={url} sx={{ width: 250, height: 250 }} />
-                      </Stack>
-                      <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <Button
-                          variant="contained"
-                          fullWidth
-                          onClick={() => {
-                            handleNext()
-                            return requestOTP()
-                          }}
-                          disabled={activeStep > 2}
-                        >
-                          Tiếp tục
-                        </Button>
-                        <Button
-                          onClick={handleBack}
-                          variant="outlined"
-                          fullWidth
-                          disabled={activeStep > 2}
-                        >
-                          Trở lại
-                        </Button>
-                      </Stack>
-                    </Stack>
-                  )}
-                </Stack>
+                <Avatar
+                  handleBackAction={handleBack}
+                  handleNextAction={() => {
+                    handleNext()
+                    requestOTP()
+                  }}
+                  activeStep={activeStep}
+                  isEdit={isEdit}
+                  url={url}
+                  setUrlAction={setUrl}
+                />
               </StepContent>
             </Step>
             <Step active={activeStep === 3 || activeStep > 3}>
@@ -475,7 +261,7 @@ export default function Page() {
       >
         <Stack spacing={1}>
           <Stack alignItems="center" spacing={2}>
-            <Avatar
+            <MuiAvatar
               src={url ? url : undefined}
               sx={{ width: 100, height: 100 }}
             />
@@ -546,7 +332,7 @@ export default function Page() {
         <Stack spacing={2}>
           <Stack spacing={1}>
             <Stack alignItems="center" spacing={2}>
-              <Avatar
+              <MuiAvatar
                 src={url ? url : undefined}
                 sx={{ width: 100, height: 100 }}
               />
