@@ -28,13 +28,18 @@ import { useFetchCard } from '@/app/hooks/use-fetch-card'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
 import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
+import Image from 'next/image'
+import faceIcon from '../../../public/face-overlay.svg'
 
 export default function Page() {
   const openSnackbar = useSnackbar()
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [modelsLoaded, setModelsLoaded] = useState(false)
-  const [status, setStatus] = useState('Loading models...')
+  const [statusMessage, setStatusMessage] = useState(
+    'Đang tải mô hình nhận diện...'
+  )
+  const [isEnableCapture, setEnableCapture] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
@@ -53,7 +58,7 @@ export default function Page() {
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
       ])
       setModelsLoaded(true)
-      setStatus('Models loaded. Detecting...')
+      setStatusMessage('Hệ thống đã sẵn sàng. Vui lòng nhìn vào camera.')
     }
     loadModels()
   }, [])
@@ -83,59 +88,83 @@ export default function Page() {
             displaySize
           )
           context.clearRect(0, 0, canvas.width, canvas.height)
-          let frontalCount = 0
-          resizedDetections.forEach((det) => {
-            const landmarks = det.landmarks
-            const leftEye = landmarks.getLeftEye()
-            const rightEye = landmarks.getRightEye()
-            const eyeDeltaX = Math.abs(leftEye[0].x - rightEye[3].x)
-            const eyeDeltaY = Math.abs(leftEye[0].y - rightEye[3].y)
-            // Basic check: eyes roughly horizontal
-            const eyeSlope = eyeDeltaY / eyeDeltaX
-            if (eyeSlope < 0.1) {
-              frontalCount++
-
-              const box = det.detection.box
-              const cornerLen = 25
-
-              // === DRAW GREEN CORNER BRACKETS ===
-              context.strokeStyle = '#00FF66' // bright green
-              context.lineWidth = 4
-
-              // Top-left
-              context.beginPath()
-              context.moveTo(box.x, box.y + cornerLen)
-              context.lineTo(box.x, box.y)
-              context.lineTo(box.x + cornerLen, box.y)
-              context.stroke()
-
-              // Top-right
-              context.beginPath()
-              context.moveTo(box.x + box.width - cornerLen, box.y)
-              context.lineTo(box.x + box.width, box.y)
-              context.lineTo(box.x + box.width, box.y + cornerLen)
-              context.stroke()
-
-              // Bottom-left
-              context.beginPath()
-              context.moveTo(box.x, box.y + box.height - cornerLen)
-              context.lineTo(box.x, box.y + box.height)
-              context.lineTo(box.x + cornerLen, box.y + box.height)
-              context.stroke()
-
-              // Bottom-right
-              context.beginPath()
-              context.moveTo(box.x + box.width - cornerLen, box.y + box.height)
-              context.lineTo(box.x + box.width, box.y + box.height)
-              context.lineTo(box.x + box.width, box.y + box.height - cornerLen)
-              context.stroke()
-            }
-          })
-          setStatus(
-            frontalCount > 0
-              ? `Detected ${frontalCount} front-facing face(s)`
-              : 'No front-facing face detected'
-          )
+          setEnableCapture(false)
+          if (detections.length === 0) {
+            setStatusMessage('Không phát hiện khuôn mặt, hãy nhìn vào camera')
+          } else if (detections.length > 1) {
+            setStatusMessage('Phát hiện nhiều hơn một khuôn mặt')
+          } else if (detections.length === 1) {
+            resizedDetections.forEach((det) => {
+              const landmarks = det.landmarks
+              const leftEye = landmarks.getLeftEye()
+              const rightEye = landmarks.getRightEye()
+              const eyeDeltaX = Math.abs(leftEye[0].x - rightEye[3].x)
+              const eyeDeltaY = Math.abs(leftEye[0].y - rightEye[3].y)
+              // Basic check: eyes roughly horizontal
+              const eyeSlope = eyeDeltaY / eyeDeltaX
+              if (eyeSlope < 0.1) {
+                const centerBoxWidth = displaySize.width * 0.4
+                const centerBoxHeight = displaySize.height * 0.4
+                const centerBoxX = (displaySize.width - centerBoxWidth) / 2.2
+                const centerBoxY = (displaySize.height - centerBoxHeight) / 2.2
+                const faceBox = detections[0].detection.box
+                const faceCenterX = faceBox.x + faceBox.width / 2.2
+                const faceCenterY = faceBox.y + faceBox.height / 2.2
+                const isCentered =
+                  faceCenterX > centerBoxX &&
+                  faceCenterX < centerBoxX + centerBoxWidth &&
+                  faceCenterY > centerBoxY &&
+                  faceCenterY < centerBoxY + centerBoxHeight
+                if (isCentered) {
+                  setStatusMessage('Phát hiện một khuôn mặt ✔')
+                  const box = det.detection.box
+                  const cornerLen = 25
+                  // === DRAW GREEN CORNER BRACKETS ===
+                  context.strokeStyle = '#00FF66' // bright green
+                  context.lineWidth = 2
+                  // Top-left
+                  context.beginPath()
+                  context.moveTo(box.x, box.y + cornerLen)
+                  context.lineTo(box.x, box.y)
+                  context.lineTo(box.x + cornerLen, box.y)
+                  context.stroke()
+                  // Top-right
+                  context.beginPath()
+                  context.moveTo(box.x + box.width - cornerLen, box.y)
+                  context.lineTo(box.x + box.width, box.y)
+                  context.lineTo(box.x + box.width, box.y + cornerLen)
+                  context.stroke()
+                  // Bottom-left
+                  context.beginPath()
+                  context.moveTo(box.x, box.y + box.height - cornerLen)
+                  context.lineTo(box.x, box.y + box.height)
+                  context.lineTo(box.x + cornerLen, box.y + box.height)
+                  context.stroke()
+                  // Bottom-right
+                  context.beginPath()
+                  context.moveTo(
+                    box.x + box.width - cornerLen,
+                    box.y + box.height
+                  )
+                  context.lineTo(box.x + box.width, box.y + box.height)
+                  context.lineTo(
+                    box.x + box.width,
+                    box.y + box.height - cornerLen
+                  )
+                  context.stroke()
+                  setEnableCapture(true)
+                } else {
+                  setStatusMessage(
+                    'Vui lòng điều chỉnh để khuôn mặt nằm giữa khung.'
+                  )
+                }
+              } else {
+                setStatusMessage(
+                  'Vui lòng điều chỉnh để khuôn mặt nằm giữa khung.'
+                )
+              }
+            })
+          }
         }
       }, 0)
     }
@@ -286,54 +315,54 @@ export default function Page() {
                 <Stack spacing={2}>
                   {(activeStep < 3 || isEdit) && (
                     <>
-                      <Box position="relative" width={400} height={400}>
-                        <Webcam
-                          audio={false}
-                          ref={webcamRef}
-                          screenshotFormat="image/jpeg"
-                          videoConstraints={{ facingMode: 'user' }}
-                          imageSmoothing
-                          style={{
-                            zIndex: 1,
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
-                          }}
-                        />
-                        <Stack
-                          alignItems="center"
-                          position="absolute"
-                          justifyContent="flex-start"
-                          zIndex={2}
-                          width="100%"
-                          height="100%"
-                          top={16}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="230"
-                            height="320"
-                            viewBox="0 0 768 768"
-                          >
-                            <path
-                              d="M384,96c-70,0-134,20-184,58s-84,93-92,160c-5,41,0,84,4,108-7-5-14-5-18-2s-7,10-9,16c-10,30-6,60,8,86,10,20,15,31,15,52,0,16,6,26,13,30,4,2,9,3,15,2,1,21,7,46,18,72,21,54,46,86,102,131,48,40,92,56,145,56s97-16,145-56c56-45,81-77,102-131,11-26,17-51,18-72,6,1,11,0,15-2,7-4,13-14,17-30,4-21,9-32,15-52,14-26,18-56,8-86-2-6-4-12-9-16s-11-3-18,2c4-24,9-67,4-108-8-67-42-123-92-160S454,96,384,96z"
-                              fill="none"
-                              stroke="#ffffff"
-                              strokeWidth="3"
+                      <Box position="relative" width="100%" height={400}>
+                        <Typography>{statusMessage}</Typography>
+                        {modelsLoaded && (
+                          <>
+                            <Webcam
+                              audio={false}
+                              ref={webcamRef}
+                              screenshotFormat="image/jpeg"
+                              videoConstraints={{ facingMode: 'user' }}
+                              imageSmoothing
+                              style={{
+                                zIndex: 1,
+                                position: 'absolute',
+                                width: '100%',
+                                height: '100%',
+                              }}
                             />
-                          </svg>
-                        </Stack>
-                        <canvas
-                          ref={canvasRef}
-                          style={{
-                            zIndex: 2,
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
-                          }}
-                        />
+                            <Stack
+                              alignItems="center"
+                              position="absolute"
+                              zIndex={2}
+                              width="100%"
+                              height="100%"
+                            >
+                              <Image
+                                priority
+                                src={faceIcon}
+                                alt="face overlay"
+                                style={{ width: '80%' }}
+                              />
+                            </Stack>
+                            <canvas
+                              ref={canvasRef}
+                              style={{
+                                zIndex: 2,
+                                position: 'absolute',
+                                width: '100%',
+                                height: '100%',
+                              }}
+                            />
+                          </>
+                        )}
                       </Box>
-                      <Button variant="contained" onClick={capture}>
+                      <Button
+                        variant="contained"
+                        onClick={capture}
+                        disabled={!isEnableCapture}
+                      >
                         Chụp ảnh
                       </Button>
                     </>

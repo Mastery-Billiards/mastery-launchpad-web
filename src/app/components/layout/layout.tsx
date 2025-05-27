@@ -46,14 +46,12 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
             alignItems="center"
             justifyContent="space-between"
           >
-            <Link href="/">
-              <Image
-                src="/logo-black-bg.png"
-                alt="logo"
-                width={140}
-                height={70}
-              />
-            </Link>
+            <Image
+              src="/logo-black-bg.png"
+              alt="logo"
+              width={140}
+              height={70}
+            />
             {!isMobile && (
               <Typography
                 fontWeight={600}
@@ -84,12 +82,12 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
           </Stack>
         </Toolbar>
         {pathname !== '/' && (
-          <Box width="100%" bgcolor="white" maxHeight={30} px={5} py={0.5}>
+          <Box bgcolor="white" maxHeight={30} px={5} py={0.5}>
             <CustomBreadcrumbs />
           </Box>
         )}
       </AppBar>
-      <Box minHeight={`calc(100vh - ${pathname !== '/' ? 103 : 74}px - 50px)`}>
+      <Box minHeight={`calc(100vh - ${pathname !== '/' ? 99 : 70}px - 50px)`}>
         {children}
       </Box>
       <Stack
