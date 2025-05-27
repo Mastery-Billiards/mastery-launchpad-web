@@ -1,8 +1,9 @@
 'use client'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import OtpInput from 'react-otp-input'
 import {
   Avatar,
+  Box,
   Button,
   CircularProgress,
   Divider,
@@ -15,6 +16,7 @@ import {
   Typography,
 } from '@mui/material'
 import Webcam from 'react-webcam'
+import * as faceapi from 'face-api.js'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
 import BackButton from '@/app/components/shared/back-button'
@@ -31,6 +33,9 @@ import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
 export default function Page() {
   const openSnackbar = useSnackbar()
   const webcamRef = useRef<Webcam>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [modelsLoaded, setModelsLoaded] = useState(false)
+  const [status, setStatus] = useState('Loading models...')
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
@@ -39,6 +44,136 @@ export default function Page() {
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
   const { setError, error } = useCardIssuanceError()
+
+  useEffect(() => {
+    const loadModels = async () => {
+      const MODEL_URL = '/models'
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+      ])
+      setModelsLoaded(true)
+      setStatus('Models loaded. Detecting...')
+    }
+    loadModels()
+  }, [])
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout
+
+    if (modelsLoaded) {
+      intervalId = setInterval(async () => {
+        const webcam = webcamRef.current
+        const canvas = canvasRef.current
+
+        if (webcam && webcam.video && canvas && canvas.getContext) {
+          const video = webcam.video
+          const context = canvas.getContext('2d')
+          if (!video || !context) return
+          const displaySize = {
+            width: video.offsetWidth,
+            height: video.offsetHeight,
+          }
+          faceapi.matchDimensions(canvas, displaySize)
+          const detections = await faceapi
+            .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+          const resizedDetections = faceapi.resizeResults(
+            detections,
+            displaySize
+          )
+          context.clearRect(0, 0, canvas.width, canvas.height)
+          let frontalCount = 0
+          resizedDetections.forEach((det) => {
+            const landmarks = det.landmarks
+            const leftEye = landmarks.getLeftEye()
+            const rightEye = landmarks.getRightEye()
+            const eyeDeltaX = Math.abs(leftEye[0].x - rightEye[3].x)
+            const eyeDeltaY = Math.abs(leftEye[0].y - rightEye[3].y)
+            // Basic check: eyes roughly horizontal
+            const eyeSlope = eyeDeltaY / eyeDeltaX
+            if (eyeSlope < 0.1) {
+              frontalCount++
+              const points = landmarks.positions
+
+              const box = det.detection.box
+              const cornerLen = 25
+
+              // === DRAW WHITE FACIAL LINES ===
+              context.strokeStyle = 'white'
+              context.lineWidth = 1.5
+              const connectPairs = [
+                [36, 39],
+                [42, 45], // eyes horizontal
+                [36, 42], // between eyes
+                [30, 33],
+                [27, 30], // nose bridge
+                [48, 54], // mouth width
+                [54, 57],
+                [48, 57], // mouth corners
+                [6, 10], // jawline
+              ]
+
+              connectPairs.forEach(([i, j]) => {
+                context.beginPath()
+                context.moveTo(points[i].x, points[i].y)
+                context.lineTo(points[j].x, points[j].y)
+                context.stroke()
+              })
+
+              // === DRAW WHITE LANDMARK DOTS ===
+              context.fillStyle = 'white'
+              points.forEach((point) => {
+                context.beginPath()
+                context.arc(point.x, point.y, 2.5, 0, 2 * Math.PI)
+                context.fill()
+              })
+
+              // === DRAW GREEN CORNER BRACKETS ===
+              context.strokeStyle = '#00FF66' // bright green
+              context.lineWidth = 4
+
+              // Top-left
+              context.beginPath()
+              context.moveTo(box.x, box.y + cornerLen)
+              context.lineTo(box.x, box.y)
+              context.lineTo(box.x + cornerLen, box.y)
+              context.stroke()
+
+              // Top-right
+              context.beginPath()
+              context.moveTo(box.x + box.width - cornerLen, box.y)
+              context.lineTo(box.x + box.width, box.y)
+              context.lineTo(box.x + box.width, box.y + cornerLen)
+              context.stroke()
+
+              // Bottom-left
+              context.beginPath()
+              context.moveTo(box.x, box.y + box.height - cornerLen)
+              context.lineTo(box.x, box.y + box.height)
+              context.lineTo(box.x + cornerLen, box.y + box.height)
+              context.stroke()
+
+              // Bottom-right
+              context.beginPath()
+              context.moveTo(box.x + box.width - cornerLen, box.y + box.height)
+              context.lineTo(box.x + box.width, box.y + box.height)
+              context.lineTo(box.x + box.width, box.y + box.height - cornerLen)
+              context.stroke()
+            }
+          })
+          setStatus(
+            frontalCount > 0
+              ? `Detected ${frontalCount} front-facing face(s)`
+              : 'No front-facing face detected'
+          )
+        }
+      }, 0)
+    }
+
+    return () => clearInterval(intervalId)
+  }, [modelsLoaded])
 
   const {
     loading: customerLoading,
@@ -53,7 +188,12 @@ export default function Page() {
     fetchData: fetchCardData,
   } = useFetchCard(cardCode)
   const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
-  const { submit, loading: submitLoading, showSuccess, setShowSuccess } = useSubmitCardIssue()
+  const {
+    submit,
+    loading: submitLoading,
+    showSuccess,
+    setShowSuccess,
+  } = useSubmitCardIssue()
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -128,6 +268,32 @@ export default function Page() {
 
   return (
     <>
+      {/*<Box position="relative" width={500} height={500}>*/}
+      {/*  <Webcam*/}
+      {/*    audio={false}*/}
+      {/*    ref={webcamRef}*/}
+      {/*    screenshotFormat="image/jpeg"*/}
+      {/*    videoConstraints={{*/}
+      {/*      facingMode: 'user',*/}
+      {/*    }}*/}
+      {/*    imageSmoothing*/}
+      {/*    style={{*/}
+      {/*      zIndex: 1,*/}
+      {/*      position: 'absolute',*/}
+      {/*      width: '100%',*/}
+      {/*      height: '100%',*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*  <canvas*/}
+      {/*    ref={canvasRef}*/}
+      {/*    style={{*/}
+      {/*      zIndex: 2,*/}
+      {/*      position: 'absolute',*/}
+      {/*      width: '100%',*/}
+      {/*      height: '100%',*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*</Box>*/}
       <BackButton />
       <Stack
         py={{ xs: 6, md: 4 }}
@@ -179,20 +345,32 @@ export default function Page() {
                 <Stack spacing={2}>
                   {(activeStep < 3 || isEdit) && (
                     <>
-                      <Webcam
-                        audio={false}
-                        height="100%"
-                        ref={webcamRef}
-                        screenshotFormat="image/jpeg"
-                        width="100%"
-                        videoConstraints={{
-                          width: 1280,
-                          height: 720,
-                          facingMode: 'user',
-                        }}
-                        imageSmoothing
-                        mirrored
-                      />
+                      <Box position="relative" width={500} height={500}>
+                        <Webcam
+                          audio={false}
+                          ref={webcamRef}
+                          screenshotFormat="image/jpeg"
+                          videoConstraints={{
+                            facingMode: 'user',
+                          }}
+                          imageSmoothing
+                          style={{
+                            zIndex: 1,
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                          }}
+                        />
+                        <canvas
+                          ref={canvasRef}
+                          style={{
+                            zIndex: 2,
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                          }}
+                        />
+                      </Box>
                       <Button variant="contained" onClick={capture}>
                         Chụp ảnh
                       </Button>
