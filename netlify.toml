@@ -1,6 +1,15 @@
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
 [build]
-  base = "mastery-launchpad-web"
-  command = "next build"
-  publish = ".next"
+command = "npm run build"
+publish = ".next"
+
+[functions]
+# Next.js API Routes & ISR use Netlify Functions
+directory = "netlify/functions"
+
+[dev]
+command = "next dev"
+targetPort = 3000
+framework = "next"
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"
