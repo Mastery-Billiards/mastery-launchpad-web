@@ -274,7 +274,7 @@ export const Avatar: FC<AvatarProps> = ({
                       priority
                       src={faceIcon}
                       alt="face overlay"
-                      style={{ width: '75%' }}
+                      style={{ width: '65%' }}
                     />
                   </Stack>
                   <canvas
