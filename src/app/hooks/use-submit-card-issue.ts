@@ -15,6 +15,7 @@ export function useSubmitCardIssue() {
 
   const submit = useCallback(
     (
+      customerId: string,
       customerCode: string,
       customerRevision: string,
       cardCode: string,
@@ -25,6 +26,7 @@ export function useSubmitCardIssue() {
     ) => {
       setLoading({ isLoading: true, type: 'submit' })
       const formData = new FormData()
+      formData.append('customerId', customerId)
       formData.append('revision', customerRevision)
       formData.append('newCode', cardCode)
       const blob = dataURLtoBlob(imgUrl)

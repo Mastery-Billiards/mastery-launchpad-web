@@ -68,6 +68,7 @@ export default function Page() {
   const submitData = useCallback(async () => {
     if (!!cardInfo && !!customerInfo && url) {
       submit(
+        customerInfo.id,
         customerInfo.code,
         customerInfo.revision,
         cardInfo.code,
