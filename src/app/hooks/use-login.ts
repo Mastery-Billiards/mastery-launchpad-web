@@ -48,7 +48,7 @@ export function useLogin() {
           setLoading(false)
         })
     },
-    [openSnackbar, router, setError]
+    [openSnackbar, router, setError, setInfo]
   )
   return {
     login,

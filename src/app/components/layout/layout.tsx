@@ -21,7 +21,6 @@ import { useUserInfo } from '@/app/stores/auth.store'
 import { ROLE } from '@/app/constant/role'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useLogout } from '@/app/hooks/use-logout'
-import Link from 'next/link'
 import CustomBreadcrumbs from '@/app/components/shared/breadcrums'
 
 interface DefaultLayoutProps {
