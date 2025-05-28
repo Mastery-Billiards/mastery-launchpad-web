@@ -140,7 +140,7 @@ export default function Page() {
         >
           <Stepper activeStep={activeStep} orientation="vertical">
             <Step active={activeStep === 0 || activeStep > 0}>
-              <StepLabel>Thông tin khách</StepLabel>
+              <StepLabel>Thông tin khách hàng</StepLabel>
               <StepContent>
                 <CustomerInfo
                   handleNextAction={handleNext}

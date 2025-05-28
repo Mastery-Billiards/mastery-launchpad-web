@@ -261,6 +261,7 @@ export const Avatar: FC<AvatarProps> = ({
                       width: '100%',
                       height: '100%',
                     }}
+                    mirrored
                   />
                   <Stack
                     alignItems="center"
