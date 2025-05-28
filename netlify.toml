@@ -11,5 +11,8 @@ command = "next dev"
 targetPort = 3000
 framework = "next"
 
+[build.environment]
+NEXT_PUBLIC_API_URL = "http://103.90.226.218:8080"
+
 [[plugins]]
 package = "@netlify/plugin-nextjs"
