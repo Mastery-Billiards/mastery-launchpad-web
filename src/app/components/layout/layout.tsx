@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { ROUTES_TITLE } from '@/app/constant/route'
+import { ROUTES_TITLE } from '@/app/constant/route-name'
 import { useResponsiveValue } from '@/app/hooks/use-responsive-value'
 import { useUserInfo } from '@/app/stores/auth.store'
 import { ROLE } from '@/app/constant/role'
