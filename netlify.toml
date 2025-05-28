@@ -1,0 +1,4 @@
+[build]
+  base = "mastery-launchpad-web"
+  command = "next build"
+  publish = ".next"
