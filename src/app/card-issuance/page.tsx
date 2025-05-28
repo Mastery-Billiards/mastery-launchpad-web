@@ -105,6 +105,7 @@ export default function Page() {
 
   const closeSuccessDialog = useCallback(() => {
     setShowSuccess(false)
+    setConfirmInfo(false)
     handleResetState()
   }, [handleResetState, setShowSuccess])
 
