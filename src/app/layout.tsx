@@ -41,10 +41,6 @@ export default function RootLayout({
       <head>
         <title>{ROUTES_HEAD[pathname]}</title>
         <meta charSet="utf-8" />
-        <meta
-          http-equiv="Content-Security-Policy"
-          content="upgrade-insecure-requests"
-        />
       </head>
       <body>
         <AppRouterCacheProvider options={{ enableCssLayer: true, key: 'css' }}>
