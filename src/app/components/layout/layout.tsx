@@ -37,7 +37,7 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
 
   return (
     <Stack justifyContent="space-between" height="100%">
-      <AppBar position="static" sx={{ bgcolor: '#212121' }}>
+      <AppBar position="sticky" sx={{ bgcolor: '#212121' }}>
         <Toolbar>
           <Stack
             width="100%"

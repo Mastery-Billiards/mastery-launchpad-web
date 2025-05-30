@@ -150,7 +150,7 @@ export default function Page() {
                   phoneNumber={phoneNumber}
                   setPhoneNumberAction={setPhoneNumber}
                   isEdit={isEdit}
-                  fetchDataAction={fetchCustomerData}
+                  fetchDataAction={() => fetchCustomerData(true)}
                 />
               </StepContent>
             </Step>

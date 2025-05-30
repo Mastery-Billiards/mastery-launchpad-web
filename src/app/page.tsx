@@ -53,7 +53,7 @@ export default function Home() {
               transform: 'scale(1.05)',
             },
           }}
-          onClick={() => router.push('/card-issuance')}
+          onClick={() => router.push('/face-id-registration')}
         >
           <AccountBoxIcon
             sx={{ fontSize: { xs: 24, md: 80 }, color: 'white' }}

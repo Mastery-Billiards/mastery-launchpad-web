@@ -10,49 +10,56 @@ export function useFetchCustomer(phoneNumber: string) {
   const [loading, setLoading] = useState<boolean>(false)
   const { setError } = useCardIssuanceError()
 
-  const fetchData = useCallback(() => {
-    if (!!phoneNumber.length) {
-      setLoading(true)
-      setCustomerInfo(null)
-      getCustomer(phoneNumber)
-        .then((data) => {
-          if (data?.isCardIssued) {
-            openSnackbar({
-              severity: 'error',
-              message: `Khách hàng với số điện thoại ${phoneNumber} đã được cấp thẻ`,
-            })
-          } else if (data?.rank === 'BASIC') {
-            openSnackbar({
-              severity: 'warning',
-              message: 'Khách hàng không đủ điều kiện để phát hành thẻ',
-            })
-          } else {
-            setCustomerInfo(data)
-          }
-          return setLoading(false)
-        })
-        .catch((e) => {
-          setError({
-            status: e?.response?.status,
-            res: e.response,
+  const fetchData = useCallback(
+    (checkIsCardIssued: boolean) => {
+      if (!!phoneNumber.length) {
+        setLoading(true)
+        setCustomerInfo(null)
+        getCustomer(phoneNumber)
+          .then((data) => {
+            if (checkIsCardIssued) {
+              if (data?.isCardIssued) {
+                openSnackbar({
+                  severity: 'error',
+                  message: `Khách hàng với số điện thoại ${phoneNumber} đã được cấp thẻ`,
+                })
+              } else if (data?.rank === 'BASIC') {
+                openSnackbar({
+                  severity: 'warning',
+                  message: 'Khách hàng không đủ điều kiện để phát hành thẻ',
+                })
+              } else {
+                setCustomerInfo(data)
+              }
+            } else {
+              setCustomerInfo(data)
+            }
+            return setLoading(false)
           })
-          switch (e?.response?.status) {
-            case 404:
-              openSnackbar({
-                severity: 'error',
-                message: `Khách hàng với số điện thoại ${phoneNumber} không tồn tại`,
-              })
-              break
-            default:
-              openSnackbar({
-                severity: 'error',
-                message: 'Failed to fetch data',
-              })
-          }
-          return setLoading(false)
-        })
-    }
-  }, [openSnackbar, phoneNumber, setError])
+          .catch((e) => {
+            setError({
+              status: e?.response?.status,
+              res: e.response,
+            })
+            switch (e?.response?.status) {
+              case 404:
+                openSnackbar({
+                  severity: 'error',
+                  message: `Khách hàng với số điện thoại ${phoneNumber} không tồn tại`,
+                })
+                break
+              default:
+                openSnackbar({
+                  severity: 'error',
+                  message: 'Failed to fetch data',
+                })
+            }
+            return setLoading(false)
+          })
+      }
+    },
+    [openSnackbar, phoneNumber, setError]
+  )
   return {
     customerInfo,
     setCustomerInfo,
