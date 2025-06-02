@@ -250,6 +250,10 @@ export default function Page() {
               (submitLoading?.isLoading && submitLoading?.type === 'submit') ||
               !otp.length
             }
+            loading={
+              submitLoading?.isLoading && submitLoading?.type === 'submit'
+            }
+            loadingPosition="start"
           >
             Phát hành thẻ
           </Button>

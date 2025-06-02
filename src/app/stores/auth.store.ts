@@ -13,7 +13,7 @@ interface authErrorState {
   ) => void
 }
 
-interface userIndoState {
+interface userInfoState {
   info: {
     name: string
     role: string
@@ -33,7 +33,7 @@ export const useAuthError = create<authErrorState>((set) => ({
   setError: (value) => set({ error: value }),
 }))
 
-export const useUserInfo = create<userIndoState>((set) => ({
+export const useUserInfo = create<userInfoState>((set) => ({
   info: null,
   setInfo: (value) => set({ info: value }),
 }))

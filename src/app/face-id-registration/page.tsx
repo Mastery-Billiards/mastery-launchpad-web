@@ -20,8 +20,8 @@ import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
 import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
-import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
 import Avatar from '@/app/card-issuance/components/avatar'
+import { useFaceIDRegistration } from '@/app/hooks/use-faceid-registration'
 
 export default function Page() {
   const [url, setUrl] = useState<string | null>(null)
@@ -37,7 +37,17 @@ export default function Page() {
     fetchData: fetchCustomerData,
   } = useFetchCustomer(phoneNumber)
   const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
-  const { submit, loading: submitLoading } = useSubmitCardIssue()
+
+  const handleReset = useCallback(() => {
+    setUrl(null)
+    setActiveStep(0)
+    setPhoneNumber('')
+    setCustomerInfo(null)
+    setOtp('')
+    setError(null)
+  }, [setCustomerInfo, setError])
+
+  const { submit, loading: submitLoading } = useFaceIDRegistration(handleReset)
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -46,13 +56,11 @@ export default function Page() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
-  const submitData = useCallback(async () => {
+  const submitData = useCallback(() => {
     if (!!customerInfo && url) {
       submit(
         customerInfo.id,
-        customerInfo.code,
         customerInfo.revision,
-        '',
         url,
         otp,
         customerInfo.contactNumber,
@@ -72,15 +80,6 @@ export default function Page() {
     },
     [customerInfo, url, requestOTPFn]
   )
-
-  const handleResetState = useCallback(() => {
-    setUrl(null)
-    setActiveStep(0)
-    setPhoneNumber('')
-    setCustomerInfo(null)
-    setOtp('')
-    setError(null)
-  }, [setCustomerInfo, setError])
 
   return (
     <>
@@ -180,10 +179,9 @@ export default function Page() {
             fullWidth
             variant="contained"
             onClick={submitData}
-            disabled={
-              (submitLoading?.isLoading && submitLoading?.type === 'submit') ||
-              !otp.length
-            }
+            loading={submitLoading}
+            disabled={submitLoading || !otp.length}
+            loadingPosition="start"
           >
             Cập nhật ảnh
           </Button>
