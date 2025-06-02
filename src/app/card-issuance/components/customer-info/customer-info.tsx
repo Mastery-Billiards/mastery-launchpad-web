@@ -1,6 +1,6 @@
 'use client'
 import React, { FC } from 'react'
-import { Stack, TextField, Button, Typography } from '@mui/material'
+import { Stack, TextField, Button, Typography, Avatar } from '@mui/material'
 import { format } from 'date-fns'
 import { Customer } from '@/app/service/customer/customer.entity'
 
@@ -13,6 +13,7 @@ interface CustomerInfoProps {
   setPhoneNumberAction: (phoneNumber: string) => void
   isEdit: boolean
   fetchDataAction: () => void
+  showAvatar?: boolean
 }
 
 export const CustomerInfo: FC<CustomerInfoProps> = ({
@@ -24,6 +25,7 @@ export const CustomerInfo: FC<CustomerInfoProps> = ({
   setPhoneNumberAction,
   isEdit,
   fetchDataAction,
+  showAvatar = false,
 }) => {
   return (
     <Stack spacing={2}>
@@ -58,6 +60,14 @@ export const CustomerInfo: FC<CustomerInfoProps> = ({
             p={1}
             spacing={1}
           >
+            {showAvatar && (
+              <Stack justifyContent="center" alignItems="center">
+                <Avatar
+                  src={customerInfo.avatar}
+                  sx={{ width: 100, height: 100 }}
+                />
+              </Stack>
+            )}
             <Stack
               direction="row"
               alignItems="center"

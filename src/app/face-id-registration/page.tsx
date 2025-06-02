@@ -2,6 +2,7 @@
 import React, { useCallback, useState } from 'react'
 import OtpInput from 'react-otp-input'
 import {
+  Avatar as MuiAvatar,
   Button,
   CircularProgress,
   Divider,
@@ -38,16 +39,12 @@ export default function Page() {
   } = useFetchCustomer(phoneNumber)
   const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
 
-  const handleReset = useCallback(() => {
-    setUrl(null)
-    setActiveStep(0)
-    setPhoneNumber('')
-    setCustomerInfo(null)
-    setOtp('')
-    setError(null)
-  }, [setCustomerInfo, setError])
-
-  const { submit, loading: submitLoading } = useFaceIDRegistration(handleReset)
+  const {
+    submit,
+    loading: submitLoading,
+    showSuccess,
+    setShowSuccess,
+  } = useFaceIDRegistration()
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -64,10 +61,21 @@ export default function Page() {
         url,
         otp,
         customerInfo.contactNumber,
-        contextKey
+        contextKey,
+        customerInfo.code
       )
     }
   }, [customerInfo, url, submit, otp, contextKey])
+
+  const handleReset = useCallback(() => {
+    setUrl(null)
+    setActiveStep(0)
+    setPhoneNumber('')
+    setCustomerInfo(null)
+    setOtp('')
+    setError(null)
+    setShowSuccess(false)
+  }, [setCustomerInfo, setError, setShowSuccess])
 
   const requestOTP = useCallback(
     (isResend?: boolean) => {
@@ -108,6 +116,7 @@ export default function Page() {
                   setPhoneNumberAction={setPhoneNumber}
                   isEdit={false}
                   fetchDataAction={() => fetchCustomerData(false)}
+                  showAvatar
                 />
               </StepContent>
             </Step>
@@ -180,7 +189,7 @@ export default function Page() {
             variant="contained"
             onClick={submitData}
             loading={submitLoading}
-            disabled={submitLoading || !otp.length}
+            disabled={submitLoading || otp.length !== 6}
             loadingPosition="start"
           >
             Cập nhật ảnh
@@ -208,6 +217,53 @@ export default function Page() {
                 : '',
             }}
           />
+        </Stack>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={showSuccess}
+        onClose={handleReset}
+        title="Cập nhật face ID thành công"
+        type="success"
+      >
+        <Stack spacing={1}>
+          <Stack alignItems="center" spacing={2}>
+            <MuiAvatar
+              src={url ? url : undefined}
+              sx={{ width: 100, height: 100 }}
+            />
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Mã khách hàng:</Typography>
+            <Typography>{customerInfo?.code}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Họ và tên:</Typography>
+            <Typography>{customerInfo?.name}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Số điện thoại:</Typography>
+            <Typography>{customerInfo?.contactNumber}</Typography>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography>Hạng thành viên:</Typography>
+            <Typography>{customerInfo?.rank}</Typography>
+          </Stack>
         </Stack>
       </ConfirmDialog>
     </>

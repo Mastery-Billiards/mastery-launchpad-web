@@ -380,8 +380,8 @@ export default function Page() {
               alignItems="center"
               justifyContent="space-between"
             >
-              <Typography>Hạng thẻ:</Typography>
-              <Typography>{cardInfo?.rank}</Typography>
+              <Typography>Hạng thành viên:</Typography>
+              <Typography>{customerInfo?.rank}</Typography>
             </Stack>
           </Stack>
           <Stack

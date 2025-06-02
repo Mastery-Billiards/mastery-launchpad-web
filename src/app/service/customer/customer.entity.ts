@@ -8,4 +8,5 @@ export type Customer = {
   revision: string
   code: string
   isCardIssued: boolean
+  avatar: string
 }
