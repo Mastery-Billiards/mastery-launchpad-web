@@ -2,13 +2,13 @@ import { useCallback, useState } from 'react'
 import { Customer } from '@/app/service/customer/customer.entity'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import { getCustomer } from '@/app/service/customer'
-import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useCardIssueError } from '@/app/stores/card-issue.store'
 
 export function useFetchCustomer(phoneNumber: string) {
   const openSnackbar = useSnackbar()
   const [customerInfo, setCustomerInfo] = useState<Customer | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
-  const { setError } = useCardIssuanceError()
+  const { setError } = useCardIssueError()
 
   const fetchData = useCallback(
     (checkIsCardIssued: boolean) => {

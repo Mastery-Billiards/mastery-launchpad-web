@@ -16,16 +16,16 @@ import {
 } from '@mui/material'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
-import CustomerInfo from '@/app/card-issuance/components/customer-info'
-import CardInfo from '@/app/card-issuance/components/card-info'
-import { Container } from '@/app/card-issuance/page.styled'
+import CustomerInfo from '@/app/card-issue/components/customer-info'
+import CardInfo from '@/app/card-issue/components/card-info'
+import { Container } from '@/app/card-issue/page.styled'
 import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
-import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { useFetchCard } from '@/app/hooks/use-fetch-card'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
 import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
-import Avatar from '@/app/card-issuance/components/avatar'
+import Avatar from '@/app/card-issue/components/avatar'
 
 export default function Page() {
   const openSnackbar = useSnackbar()
@@ -36,7 +36,7 @@ export default function Page() {
   const [otp, setOtp] = useState<string>('')
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
-  const { setError, error } = useCardIssuanceError()
+  const { setError, error } = useCardIssueError()
 
   const {
     loading: customerLoading,

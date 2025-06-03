@@ -15,21 +15,22 @@ import {
   Typography,
 } from '@mui/material'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
-import CustomerInfo from '@/app/card-issuance/components/customer-info'
-import { Container } from '@/app/card-issuance/page.styled'
+import CustomerInfo from '@/app/card-issue/components/customer-info'
+import { Container } from '@/app/card-issue/page.styled'
 import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
-import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
-import Avatar from '@/app/card-issuance/components/avatar'
+import Avatar from '@/app/card-issue/components/avatar'
 import { useFaceIDRegistration } from '@/app/hooks/use-faceid-registration'
+import CountdownTimer from '@/app/components/shared/countdown-timer'
 
 export default function Page() {
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
   const [otp, setOtp] = useState<string>('')
-  const { setError, error } = useCardIssuanceError()
+  const { setError, error } = useCardIssueError()
 
   const {
     loading: customerLoading,
@@ -164,21 +165,24 @@ export default function Page() {
                   />
                   <Stack
                     direction="row"
-                    width="100%"
                     alignItems="center"
-                    justifyContent="flex-end"
-                    spacing={1}
+                    justifyContent="space-between"
+                    width="100%"
                   >
-                    {otpLoading?.isLoading && otpLoading?.type === 'resend' && (
-                      <CircularProgress size={16} />
-                    )}
-                    <Link
-                      underline="hover"
-                      sx={{ cursor: 'pointer' }}
-                      onClick={() => requestOTP(true)}
-                    >
-                      Gửi lại mã OTP
-                    </Link>
+                    <CountdownTimer milliseconds={300000} />
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {otpLoading?.isLoading &&
+                        otpLoading?.type === 'resend' && (
+                          <CircularProgress size={16} />
+                        )}
+                      <Link
+                        underline="hover"
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => requestOTP(true)}
+                      >
+                        Gửi lại mã OTP
+                      </Link>
+                    </Stack>
                   </Stack>
                 </Stack>
               </StepContent>

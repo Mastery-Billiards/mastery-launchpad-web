@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
-import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { dataURLtoBlob } from '@/app/utils/image'
 import { submitFaceID } from '@/app/service/face-id'
 
 export function useFaceIDRegistration() {
   const openSnackbar = useSnackbar()
-  const { setError } = useCardIssuanceError()
+  const { setError } = useCardIssueError()
   const [loading, setLoading] = useState<boolean>(false)
   const [showSuccess, setShowSuccess] = useState<boolean>(false)
 

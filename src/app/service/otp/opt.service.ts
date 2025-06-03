@@ -7,7 +7,7 @@ export const requestOTP = async (phoneNumber: string) => {
     {
       recipient: phoneNumber,
       channel: 'ZNS',
-      context: 'card_issuance',
+      context: 'card_issue',
     },
     {
       headers: {

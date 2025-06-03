@@ -29,7 +29,7 @@ export default function Home() {
               transform: 'scale(1.1)',
             },
           }}
-          onClick={() => router.push('/card-issuance')}
+          onClick={() => router.push('/card-issue')}
         >
           <AddCardIcon sx={{ fontSize: { xs: 24, md: 80 }, color: 'white' }} />
         </Stack>

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { logoutService } from '@/app/service/logout'
 import { useRouter } from 'next/navigation'
 import { removeCookie } from '@/app/utils/cookie'
@@ -8,7 +8,7 @@ import { USER_AUTHENTICATION_INFO_KEY } from '@/app/constant/local-storage-key'
 
 export function useLogout() {
   const router = useRouter()
-  const { setError } = useCardIssuanceError()
+  const { setError } = useCardIssueError()
   const [loading, setLoading] = useState<boolean>(false)
 
   const logout = useCallback(() => {

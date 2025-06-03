@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
-import { useCardIssuanceError } from '@/app/stores/card-issuance.store'
+import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { dataURLtoBlob } from '@/app/utils/image'
 import { submitCardIssue } from '@/app/service/card'
 
 export function useSubmitCardIssue() {
   const openSnackbar = useSnackbar()
-  const { setError } = useCardIssuanceError()
+  const { setError } = useCardIssueError()
   const [loading, setLoading] = useState<{
     isLoading: boolean
     type: string

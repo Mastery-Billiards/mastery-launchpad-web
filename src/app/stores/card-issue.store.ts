@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface cardIssuanceErrorState {
+interface cardIssueErrorState {
   error: {
     status: number
     res: { string: { string: string } }
@@ -13,7 +13,7 @@ interface cardIssuanceErrorState {
   ) => void
 }
 
-export const useCardIssuanceError = create<cardIssuanceErrorState>((set) => ({
+export const useCardIssueError = create<cardIssueErrorState>((set) => ({
   error: null,
   setError: (value) => set({ error: value }),
 }))

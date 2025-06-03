@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useState } from 'react'
+import React, { useState } from 'react'
 import { Box, Button, Stack, TextField, Typography } from '@mui/material'
 import { LeftSideContainer } from '@/app/login/page.styled'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
@@ -8,9 +8,15 @@ import LoginIcon from '@mui/icons-material/Login'
 import Image from 'next/image'
 import { useLogin } from '@/app/hooks/use-login'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
-import { Container } from '@/app/card-issuance/page.styled'
+import { Container } from '@/app/card-issue/page.styled'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useAuthError } from '@/app/stores/auth.store'
+import { useForm } from 'react-hook-form'
+
+interface LoginInput {
+  userName: string
+  password: string
+}
 
 export default function Home() {
   const { loading, login } = useLogin()
@@ -18,9 +24,18 @@ export default function Home() {
   const [password, setPassword] = useState('')
   const { setError, error } = useAuthError()
 
-  const handleSubmit = useCallback(() => {
-    login(username, password)
-  }, [login, password, username])
+  const form = useForm<LoginInput>({
+    defaultValues: {
+      userName: '',
+      password: '',
+    },
+  })
+
+  const { handleSubmit, register } = form
+
+  const onSubmit = handleSubmit((data) => {
+    return login(data.userName, data.password)
+  })
 
   return (
     <>
@@ -69,65 +84,50 @@ export default function Home() {
                 MASTERY LAUNCHPAD
               </Typography>
             </Stack>
-            <Stack spacing={{ xs: 4, md: 6 }}>
-              <Stack spacing={2}>
-                <Stack direction="row" alignItems="flex-end">
-                  <AccountCircleIcon
-                    sx={{ color: 'action.active', mr: 1, my: 0.5 }}
-                  />
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label="Tên đăng nhập"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
+            <form onSubmit={onSubmit}>
+              <Stack spacing={{ xs: 4, md: 6 }}>
+                <Stack spacing={2}>
+                  <Stack direction="row" alignItems="flex-end">
+                    <AccountCircleIcon
+                      sx={{ color: 'action.active', mr: 1, my: 0.5 }}
+                    />
+                    <TextField
+                      {...register('userName')}
+                      fullWidth
+                      variant="standard"
+                      label="Tên đăng nhập"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                  </Stack>
+                  <Stack direction="row" alignItems="flex-end">
+                    <LockIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+                    <TextField
+                      {...register('password')}
+                      fullWidth
+                      variant="standard"
+                      label="Mật khẩu"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </Stack>
                 </Stack>
-                <Stack direction="row" alignItems="flex-end">
-                  <LockIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                  <TextField
+                <Stack alignItems="flex-end">
+                  <Button
+                    type="submit"
                     fullWidth
-                    variant="standard"
-                    label="Mật khẩu"
-                    type="password"
-                    // slotProps={{
-                    //   input: {
-                    //     endAdornment: (
-                    //       <InputAdornment position="end">
-                    //         <IconButton
-                    //           onClick={() => setShowPassword(!showPassword)}
-                    //           onMouseDown={(e) => e.preventDefault()}
-                    //           edge="end"
-                    //         >
-                    //           {showPassword ? (
-                    //             <EyesOffIcon fontSize="small" />
-                    //           ) : (
-                    //             <EyesIcon fontSize="small" />
-                    //           )}
-                    //         </IconButton>
-                    //       </InputAdornment>
-                    //     ),
-                    //   },
-                    // }}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                    loading={loading}
+                    loadingPosition="start"
+                    variant="contained"
+                    endIcon={<LoginIcon />}
+                    disabled={loading}
+                  >
+                    Đăng nhập
+                  </Button>
                 </Stack>
               </Stack>
-              <Stack alignItems="flex-end">
-                <Button
-                  fullWidth
-                  loading={loading}
-                  loadingPosition="start"
-                  variant="contained"
-                  endIcon={<LoginIcon />}
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  Đăng nhập
-                </Button>
-              </Stack>
-            </Stack>
+            </form>
           </Stack>
         </Stack>
       </Stack>

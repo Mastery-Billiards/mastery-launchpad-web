@@ -12,6 +12,7 @@ import {
   ListItemText,
   ListItemIcon,
   IconButton,
+  useTheme,
 } from '@mui/material'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -28,6 +29,7 @@ interface DefaultLayoutProps {
 }
 
 const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
+  const theme = useTheme()
   const isMobile = useResponsiveValue({ xs: true, md: false })
   const pathname = usePathname()
   const { logout } = useLogout()
@@ -94,6 +96,9 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
         justifyContent="center"
         minHeight={50}
         bgcolor="#212121"
+        position="sticky"
+        bottom={0}
+        zIndex={theme.zIndex.appBar}
       >
         <Typography color="white">
           License &#169; Mastery Billiards. All rights reserved.
@@ -108,9 +113,6 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
         keepMounted
         onClose={() => setOpenPopover(false)}
         open={openPopover}
-        // slotProps={{
-        //   paper: { sx: { width: 300 } },
-        // }}
         transitionDuration={0}
       >
         <Box sx={{ my: 1 }}>

@@ -32,6 +32,7 @@ export const CardInfo: FC<CardInfoProps> = ({
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" spacing={2}>
         <TextField
+          autoFocus
           fullWidth
           size="small"
           variant="standard"
