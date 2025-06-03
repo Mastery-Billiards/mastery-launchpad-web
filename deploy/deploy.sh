@@ -38,25 +38,20 @@ NC='\033[0m'
 
 echo -e "${GREEN}Starting server-side deployment...${NC}"
 
-# Install dependencies
 echo -e "${GREEN}Installing dependencies...${NC}"
 yarn install --production
 
-# Check if PM2 is installed
 if ! command -v pm2 &> /dev/null; then
     echo -e "${GREEN}Installing PM2 globally...${NC}"
     yarn global add pm2
 fi
 
-# Stop existing application if running
 echo -e "${GREEN}Stopping existing application...${NC}"
 pm2 stop mastery-launchpad-web 2>/dev/null || true
 
-# Start the application with PM2
 echo -e "${GREEN}Starting the application...${NC}"
 pm2 start "yarn next start" --name "mastery-launchpad-web"
 
-# Save PM2 process list
 echo -e "${GREEN}Saving PM2 process list...${NC}"
 pm2 save
 
@@ -78,9 +73,7 @@ ssh $SERVER_USER@$SERVER_IP "cd $SERVER_PATH && \
     ./deploy_server.sh && \
     rm deploy.tar.gz"
 
-# Cleanup
 echo -e "${GREEN}Cleaning up...${NC}"
 rm -rf $TEMP_DIR deploy.tar.gz
 
 echo -e "${GREEN}Deployment completed successfully!${NC}"
-echo -e "${YELLOW}Please update the SERVER_USER, SERVER_IP, and SERVER_PATH variables in this script before using it.${NC}" 
