@@ -1,5 +1,5 @@
 'use client'
-import React, { FC } from 'react'
+import React, { FC, useRef, KeyboardEvent } from 'react'
 import { Stack, TextField, Button, Typography, Avatar } from '@mui/material'
 import { format } from 'date-fns'
 import { Customer } from '@/app/service/customer/customer.entity'
@@ -27,6 +27,17 @@ export const CustomerInfo: FC<CustomerInfoProps> = ({
   fetchDataAction,
   showAvatar = false,
 }) => {
+  const buttonConfirmRef = useRef<HTMLButtonElement>(null)
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (buttonConfirmRef.current) {
+        buttonConfirmRef.current.focus()
+        buttonConfirmRef.current.click()
+      }
+    }
+  }
   return (
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" spacing={2}>
@@ -38,9 +49,11 @@ export const CustomerInfo: FC<CustomerInfoProps> = ({
           label="SỐ ĐIỆN THOẠI"
           value={phoneNumber}
           onChange={(e) => setPhoneNumberAction(e.target.value)}
+          onKeyDown={handleKeyDown}
           disabled={(loading || activeStep > 0) && !isEdit}
         />
         <Button
+          ref={buttonConfirmRef}
           variant="outlined"
           onClick={fetchDataAction}
           disabled={
@@ -121,6 +134,7 @@ export const CustomerInfo: FC<CustomerInfoProps> = ({
             </Stack>
           </Stack>
           <Button
+            autoFocus
             variant="contained"
             onClick={handleNextAction}
             disabled={activeStep > 0}

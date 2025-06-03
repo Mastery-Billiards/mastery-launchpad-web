@@ -1,5 +1,5 @@
 'use client'
-import React, { FC } from 'react'
+import React, { FC, KeyboardEvent, useRef } from 'react'
 import { Stack, TextField, Button, Typography } from '@mui/material'
 import Image from 'next/image'
 import { CARD_IMAGE_MAP, CARD_STATUS } from '@/app/constant/card'
@@ -28,6 +28,16 @@ export const CardInfo: FC<CardInfoProps> = ({
   isEdit,
   fetchDataAction,
 }) => {
+  const buttonConfirmRef = useRef<HTMLButtonElement>(null)
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (buttonConfirmRef.current) {
+        buttonConfirmRef.current.focus()
+        buttonConfirmRef.current.click()
+      }
+    }
+  }
   return (
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" spacing={2}>
@@ -38,10 +48,12 @@ export const CardInfo: FC<CardInfoProps> = ({
           variant="standard"
           label="QUÉT MÃ BARCODE"
           value={cardCode}
+          onKeyDown={handleKeyDown}
           onChange={(e) => setCardCodeAction(e.target.value)}
           disabled={(loading || activeStep > 1) && !isEdit}
         />
         <Button
+          ref={buttonConfirmRef}
           variant="outlined"
           onClick={fetchDataAction}
           disabled={
@@ -100,6 +112,7 @@ export const CardInfo: FC<CardInfoProps> = ({
       )}
       <Stack direction="row" alignItems="center" spacing={1.5}>
         <Button
+          autoFocus
           variant="contained"
           fullWidth
           onClick={handleCheckCardAction}

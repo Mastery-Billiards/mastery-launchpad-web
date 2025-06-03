@@ -27,6 +27,7 @@ export const Avatar: FC<AvatarProps> = ({
 }) => {
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const [modelsLoaded, setModelsLoaded] = useState(false)
   const [statusMessage, setStatusMessage] = useState(DEFAULT_STATUS)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -194,6 +195,12 @@ export const Avatar: FC<AvatarProps> = ({
     }
   }, [capture, countdown, modelsLoaded, startCountdown, url])
 
+  useEffect(() => {
+    if (buttonRef.current && url) {
+      buttonRef.current.focus()
+    }
+  }, [url])
+
   return (
     <Stack spacing={2}>
       {url ? (
@@ -223,6 +230,7 @@ export const Avatar: FC<AvatarProps> = ({
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <Button
+              ref={buttonRef}
               variant="contained"
               fullWidth
               onClick={() => handleNextAction()}

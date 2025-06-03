@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useState } from 'react'
+import React, { KeyboardEvent, useCallback, useRef, useState } from 'react'
 import OtpInput from 'react-otp-input'
 import {
   Avatar as MuiAvatar,
@@ -28,6 +28,7 @@ import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
 import Avatar from '@/app/card-issue/components/avatar'
 
 export default function Page() {
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const openSnackbar = useSnackbar()
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
@@ -124,6 +125,16 @@ export default function Page() {
     setIsEdit(true)
   }, [])
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (buttonRef.current) {
+        buttonRef.current.focus()
+        buttonRef.current.click()
+      }
+    }
+  }
+
   return (
     <>
       <Stack
@@ -198,11 +209,20 @@ export default function Page() {
               <StepContent>
                 <Stack spacing={1}>
                   <OtpInput
+                    shouldAutoFocus
                     value={otp}
                     onChange={setOtp}
                     numInputs={6}
                     renderSeparator={<span>-</span>}
-                    renderInput={(props) => <input {...props} />}
+                    renderInput={(props) => (
+                      <input
+                        {...props}
+                        onKeyDown={(e) => {
+                          props.onKeyDown(e)
+                          handleKeyDown(e)
+                        }}
+                      />
+                    )}
                     inputStyle={{
                       width: 50,
                       height: 50,
@@ -235,6 +255,7 @@ export default function Page() {
             </Step>
           </Stepper>
           <Button
+            ref={buttonRef}
             fullWidth
             variant="contained"
             onClick={() => {

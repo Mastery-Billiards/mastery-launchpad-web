@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useState } from 'react'
+import React, { KeyboardEvent, useCallback, useRef, useState } from 'react'
 import OtpInput from 'react-otp-input'
 import {
   Avatar as MuiAvatar,
@@ -26,6 +26,7 @@ import { useFaceIDRegistration } from '@/app/hooks/use-faceid-registration'
 import CountdownTimer from '@/app/components/shared/countdown-timer'
 
 export default function Page() {
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const [url, setUrl] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState<string>('')
@@ -90,6 +91,16 @@ export default function Page() {
     [customerInfo, url, requestOTPFn]
   )
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (buttonRef.current) {
+        buttonRef.current.focus()
+        buttonRef.current.click()
+      }
+    }
+  }
+
   return (
     <>
       <Stack
@@ -149,11 +160,20 @@ export default function Page() {
               <StepContent>
                 <Stack spacing={1}>
                   <OtpInput
+                    shouldAutoFocus
                     value={otp}
                     onChange={setOtp}
                     numInputs={6}
                     renderSeparator={<span>-</span>}
-                    renderInput={(props) => <input {...props} />}
+                    renderInput={(props) => (
+                      <input
+                        {...props}
+                        onKeyDown={(e) => {
+                          props.onKeyDown(e)
+                          handleKeyDown(e)
+                        }}
+                      />
+                    )}
                     inputStyle={{
                       width: 50,
                       height: 50,
@@ -189,6 +209,7 @@ export default function Page() {
             </Step>
           </Stepper>
           <Button
+            ref={buttonRef}
             fullWidth
             variant="contained"
             onClick={submitData}
