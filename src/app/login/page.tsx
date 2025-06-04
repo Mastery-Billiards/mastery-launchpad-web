@@ -11,7 +11,7 @@ import ConfirmDialog from '@/app/components/shared/confirm-dialog'
 import { Container } from '@/app/card-issue/page.styled'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useAuthError } from '@/app/stores/auth.store'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 
 interface LoginInput {
   userName: string
@@ -20,8 +20,6 @@ interface LoginInput {
 
 export default function Home() {
   const { loading, login } = useLogin()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const { setError, error } = useAuthError()
 
   const form = useForm<LoginInput>({
@@ -31,7 +29,7 @@ export default function Home() {
     },
   })
 
-  const { handleSubmit, register } = form
+  const { handleSubmit, register, control } = form
 
   const onSubmit = handleSubmit((data) => {
     return login(data.userName, data.password)
@@ -91,25 +89,33 @@ export default function Home() {
                     <AccountCircleIcon
                       sx={{ color: 'action.active', mr: 1, my: 0.5 }}
                     />
-                    <TextField
-                      {...register('userName')}
-                      fullWidth
-                      variant="standard"
-                      label="Tên đăng nhập"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          variant="standard"
+                          label="Tên đăng nhập"
+                        />
+                      )}
+                      name="userName"
                     />
                   </Stack>
                   <Stack direction="row" alignItems="flex-end">
                     <LockIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                    <TextField
-                      {...register('password')}
-                      fullWidth
-                      variant="standard"
-                      label="Mật khẩu"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          variant="standard"
+                          label="Mật khẩu"
+                          type="password"
+                        />
+                      )}
+                      name="password"
                     />
                   </Stack>
                 </Stack>
