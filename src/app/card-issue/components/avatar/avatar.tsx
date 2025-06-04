@@ -5,6 +5,7 @@ import Webcam from 'react-webcam'
 import * as faceapi from 'face-api.js'
 import Image from 'next/image'
 import faceIcon from '../../../../../public/face-overlay.svg'
+import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 
 interface AvatarProps {
   handleBackAction: () => void
@@ -25,6 +26,7 @@ export const Avatar: FC<AvatarProps> = ({
   url,
   setUrlAction,
 }) => {
+  const openSnackbar = useSnackbar()
   const webcamRef = useRef<Webcam>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -33,21 +35,20 @@ export const Avatar: FC<AvatarProps> = ({
   const [countdown, setCountdown] = useState<number | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
 
-  const getMedia = async () => {
+  const getMedia = useCallback(async () => {
     try {
       await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       })
-      // Use the stream here
     } catch (err) {
-      console.log('Error accessing media:', err)
+      openSnackbar({ message: err, variant: 'error' })
     }
-  }
+  }, [openSnackbar])
 
   useEffect(() => {
     getMedia()
-  }, [])
+  }, [getMedia])
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot()
