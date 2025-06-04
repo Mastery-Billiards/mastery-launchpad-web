@@ -26,6 +26,7 @@ import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
 import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
 import Avatar from '@/app/card-issue/components/avatar'
+import CountdownTimer from '@/app/components/shared/countdown-timer'
 
 export default function Page() {
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -51,7 +52,12 @@ export default function Page() {
     setCardInfo,
     fetchData: fetchCardData,
   } = useFetchCard(cardCode)
-  const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
+  const {
+    requestOTPFn,
+    contextKey,
+    loading: otpLoading,
+    expiresIn,
+  } = useRequestOtp()
   const {
     submit,
     loading: submitLoading,
@@ -234,21 +240,28 @@ export default function Page() {
                   />
                   <Stack
                     direction="row"
-                    width="100%"
                     alignItems="center"
-                    justifyContent="flex-end"
-                    spacing={1}
+                    justifyContent="space-between"
+                    width="100%"
                   >
-                    {otpLoading?.isLoading && otpLoading?.type === 'resend' && (
-                      <CircularProgress size={16} />
+                    {expiresIn ? (
+                      <CountdownTimer seconds={Number(expiresIn)} />
+                    ) : (
+                      <span />
                     )}
-                    <Link
-                      underline="hover"
-                      sx={{ cursor: 'pointer' }}
-                      onClick={() => requestOTP(true)}
-                    >
-                      Gửi lại mã OTP
-                    </Link>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {otpLoading?.isLoading &&
+                        otpLoading?.type === 'resend' && (
+                          <CircularProgress size={16} />
+                        )}
+                      <Link
+                        underline="hover"
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => requestOTP(true)}
+                      >
+                        Gửi lại mã OTP
+                      </Link>
+                    </Stack>
                   </Stack>
                 </Stack>
               </StepContent>

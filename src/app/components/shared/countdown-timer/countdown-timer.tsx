@@ -2,15 +2,15 @@ import React, { useState, useEffect, FC } from 'react'
 import { Typography } from '@mui/material'
 
 interface CountdownTimerProps {
-  milliseconds: number
+  seconds: number
   onComplete?: () => void
 }
 
 export const CountdownTimer: FC<CountdownTimerProps> = ({
-  milliseconds,
+  seconds,
   onComplete,
 }) => {
-  const [totalMillis, setTotalMillis] = useState<number>(milliseconds)
+  const [totalMillis, setTotalMillis] = useState<number>(seconds * 1000)
   const [isRunning, setIsRunning] = useState<boolean>(true)
 
   useEffect(() => {
@@ -36,9 +36,13 @@ export const CountdownTimer: FC<CountdownTimerProps> = ({
     return `${mins} phút ${secs < 10 ? '0' : ''}${secs} giây`
   }
 
-  return (
+  return isRunning ? (
     <Typography fontSize={12} fontWeight={600} color="textSecondary">
       Hết hạn trong: {formatTime(totalMillis)}
+    </Typography>
+  ) : (
+    <Typography fontSize={12} fontWeight={600} color="error">
+      Mã OTP đã hết hạn
     </Typography>
   )
 }

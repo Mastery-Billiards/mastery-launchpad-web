@@ -11,9 +11,11 @@ export function useRequestOtp() {
     type: string
   } | null>(null)
   const [contextKey, setContextKey] = useState<string>('')
+  const [expiresIn, setExpiresIn] = useState<string | null>(null)
 
   const requestOTPFn = useCallback(
     (phoneNumber: string, isResend?: boolean) => {
+      setExpiresIn(null)
       setLoading({ isLoading: true, type: isResend ? 'resend' : 'otp' })
       requestOTP(phoneNumber)
         .then((data) => {
@@ -24,6 +26,7 @@ export function useRequestOtp() {
               : 'Gửi mã OTP đến Zalo của khách hàng thành công',
           })
           setContextKey(data.contextKey)
+          setExpiresIn(data.expiresIn)
           setLoading(null)
         })
         .catch((e) => {
@@ -37,6 +40,7 @@ export function useRequestOtp() {
     [openSnackbar, setError]
   )
   return {
+    expiresIn,
     contextKey,
     requestOTPFn,
     loading,

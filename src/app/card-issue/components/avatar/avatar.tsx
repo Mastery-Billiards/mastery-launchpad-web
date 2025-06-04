@@ -44,7 +44,13 @@ export const Avatar: FC<AvatarProps> = ({
       })
     } catch (err) {
       const message = getErrorMessage(err)
-      openSnackbar({ message: message, severity: 'error' })
+      switch (message) {
+        case 'Permission denied':
+          return openSnackbar({
+            message: 'Bạn chưa cấp quyền cho camera, hãy cấp quyền',
+            severity: 'error',
+          })
+      }
     }
   }, [openSnackbar])
 

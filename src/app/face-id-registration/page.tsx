@@ -39,7 +39,12 @@ export default function Page() {
     setCustomerInfo,
     fetchData: fetchCustomerData,
   } = useFetchCustomer(phoneNumber)
-  const { requestOTPFn, contextKey, loading: otpLoading } = useRequestOtp()
+  const {
+    requestOTPFn,
+    contextKey,
+    loading: otpLoading,
+    expiresIn,
+  } = useRequestOtp()
 
   const {
     submit,
@@ -189,7 +194,11 @@ export default function Page() {
                     justifyContent="space-between"
                     width="100%"
                   >
-                    <CountdownTimer milliseconds={300000} />
+                    {expiresIn ? (
+                      <CountdownTimer seconds={Number(expiresIn)} />
+                    ) : (
+                      <span />
+                    )}
                     <Stack direction="row" alignItems="center" spacing={1}>
                       {otpLoading?.isLoading &&
                         otpLoading?.type === 'resend' && (
