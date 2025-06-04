@@ -14,6 +14,9 @@ const nextConfig = {
     serverActions: true,
     appDir: true,
   },
+  images: {
+    unoptimized: true,
+  },
 }
 
 export default nextConfig
