@@ -38,6 +38,7 @@ export default function Page() {
   const [otp, setOtp] = useState<string>('')
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
+  const [isOTPExpired, setIsOTPExpired] = useState<boolean>(false)
   const { setError, error } = useCardIssueError()
 
   const {
@@ -245,7 +246,22 @@ export default function Page() {
                     width="100%"
                   >
                     {expiresIn ? (
-                      <CountdownTimer seconds={Number(expiresIn)} />
+                      <>
+                        {isOTPExpired ? (
+                          <Typography
+                            fontSize={12}
+                            fontWeight={600}
+                            color="error"
+                          >
+                            Mã OTP đã hết hạn
+                          </Typography>
+                        ) : (
+                          <CountdownTimer
+                            seconds={Number(expiresIn)}
+                            onComplete={() => setIsOTPExpired(true)}
+                          />
+                        )}
+                      </>
                     ) : (
                       <span />
                     )}
@@ -282,7 +298,8 @@ export default function Page() {
             }}
             disabled={
               (submitLoading?.isLoading && submitLoading?.type === 'submit') ||
-              !otp.length
+              otp.length !== 6 ||
+              isOTPExpired
             }
             loading={
               submitLoading?.isLoading && submitLoading?.type === 'submit'

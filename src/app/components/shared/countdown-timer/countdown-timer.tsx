@@ -36,13 +36,9 @@ export const CountdownTimer: FC<CountdownTimerProps> = ({
     return `${mins} phút ${secs < 10 ? '0' : ''}${secs} giây`
   }
 
-  return isRunning ? (
+  return (
     <Typography fontSize={12} fontWeight={600} color="textSecondary">
       Hết hạn trong: {formatTime(totalMillis)}
-    </Typography>
-  ) : (
-    <Typography fontSize={12} fontWeight={600} color="error">
-      Mã OTP đã hết hạn
     </Typography>
   )
 }
