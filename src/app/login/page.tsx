@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import { Box, Button, Stack, TextField, Typography } from '@mui/material'
 import { LeftSideContainer } from '@/app/login/page.styled'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
@@ -29,7 +29,7 @@ export default function Home() {
     },
   })
 
-  const { handleSubmit, register, control } = form
+  const { handleSubmit, control } = form
 
   const onSubmit = handleSubmit((data) => {
     return login(data.userName, data.password)
@@ -40,6 +40,7 @@ export default function Home() {
       <Stack
         direction="row"
         height="100dvh"
+        width="100%"
         alignItems="center"
         justifyContent="space-between"
         spacing={2.5}
@@ -51,6 +52,8 @@ export default function Home() {
             md: 'none',
           },
           backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
         }}
       >
         <LeftSideContainer />
