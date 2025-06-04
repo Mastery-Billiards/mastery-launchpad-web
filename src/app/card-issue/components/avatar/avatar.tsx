@@ -6,6 +6,7 @@ import * as faceapi from 'face-api.js'
 import Image from 'next/image'
 import faceIcon from '../../../../../public/face-overlay.svg'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
+import { getErrorMessage } from '@/app/utils/string'
 
 interface AvatarProps {
   handleBackAction: () => void
@@ -42,7 +43,8 @@ export const Avatar: FC<AvatarProps> = ({
         audio: true,
       })
     } catch (err) {
-      openSnackbar({ message: err, variant: 'error' })
+      const message = getErrorMessage(err)
+      openSnackbar({ message: message, severity: 'error' })
     }
   }, [openSnackbar])
 
