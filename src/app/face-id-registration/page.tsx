@@ -21,14 +21,9 @@ import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
 import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
+import Avatar from '@/app/card-issue/components/avatar'
 import { useFaceIDRegistration } from '@/app/hooks/use-faceid-registration'
 import CountdownTimer from '@/app/components/shared/countdown-timer'
-
-import dynamic from 'next/dynamic'
-const WebcamComponent = dynamic(
-  () => import('@/app/card-issue/components/avatar'),
-  { ssr: false }
-)
 
 export default function Page() {
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -140,7 +135,7 @@ export default function Page() {
             <Step active={activeStep === 1 || activeStep > 1}>
               <StepLabel>Ảnh khách hàng</StepLabel>
               <StepContent>
-                <WebcamComponent
+                <Avatar
                   handleBackAction={handleBack}
                   handleNextAction={() => {
                     handleNext()

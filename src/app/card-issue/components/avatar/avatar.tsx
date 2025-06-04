@@ -33,6 +33,22 @@ export const Avatar: FC<AvatarProps> = ({
   const [countdown, setCountdown] = useState<number | null>(null)
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
 
+  const getMedia = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      })
+      // Use the stream here
+    } catch (err) {
+      console.log('Error accessing media:', err)
+    }
+  }
+
+  useEffect(() => {
+    getMedia()
+  }, [])
+
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot()
     if (imageSrc) {
