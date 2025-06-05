@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import { useSnackbar } from '@/app/providers/snackbar-provider/hooks/use-snackbar'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
-import CustomerInfo from '@/app/card-issue/components/customer-info'
+import CustomerInfo from '../components/shared/customer-info'
 import CardInfo from '@/app/card-issue/components/card-info'
 import { Container } from '@/app/card-issue/page.styled'
 import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
@@ -25,7 +25,7 @@ import { useFetchCard } from '@/app/hooks/use-fetch-card'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
 import { useSubmitCardIssue } from '@/app/hooks/use-submit-card-issue'
-import Avatar from '@/app/card-issue/components/avatar'
+import Avatar from '../components/shared/avatar'
 import CountdownTimer from '@/app/components/shared/countdown-timer'
 
 export default function Page() {

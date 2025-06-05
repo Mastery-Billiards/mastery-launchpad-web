@@ -15,13 +15,13 @@ import {
   Typography,
 } from '@mui/material'
 import ConfirmDialog from '@/app/components/shared/confirm-dialog'
-import CustomerInfo from '@/app/card-issue/components/customer-info'
+import CustomerInfo from '../components/shared/customer-info'
 import { Container } from '@/app/card-issue/page.styled'
 import { useFetchCustomer } from '@/app/hooks/use-fetch-customer'
 import { useCardIssueError } from '@/app/stores/card-issue.store'
 import { syntaxHighlight } from '@/app/utils/string'
 import { useRequestOtp } from '@/app/hooks/use-request-otp'
-import Avatar from '@/app/card-issue/components/avatar'
+import Avatar from '../components/shared/avatar'
 import { useFaceIDRegistration } from '@/app/hooks/use-faceid-registration'
 import CountdownTimer from '@/app/components/shared/countdown-timer'
 
