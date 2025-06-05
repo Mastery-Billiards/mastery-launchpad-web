@@ -39,6 +39,8 @@ export default function Page() {
   const [confirmInfo, setConfirmInfo] = useState<boolean>(false)
   const [isEdit, setIsEdit] = useState(false)
   const [isOTPExpired, setIsOTPExpired] = useState<boolean>(false)
+  const [resendExpire, setResendExpire] = useState(0)
+  const [isResendDisabled, setIsResendDisabled] = useState<boolean>(false)
   const { setError, error } = useCardIssueError()
 
   const {
@@ -257,6 +259,7 @@ export default function Page() {
                           </Typography>
                         ) : (
                           <CountdownTimer
+                            label="MMã OTP hết hạn sau:"
                             seconds={Number(expiresIn)}
                             onComplete={() => setIsOTPExpired(true)}
                           />
@@ -271,12 +274,29 @@ export default function Page() {
                           <CircularProgress size={16} />
                         )}
                       <Link
+                        color={isResendDisabled ? 'textDisabled' : 'primary'}
                         underline="hover"
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => requestOTP(true)}
+                        sx={{
+                          cursor: 'pointer',
+                          pointerEvents: isResendDisabled ? 'none' : 'default',
+                        }}
+                        onClick={() => {
+                          setResendExpire(30)
+                          setIsResendDisabled(true)
+                          requestOTP(true)
+                        }}
                       >
                         Gửi lại mã OTP
                       </Link>
+                      {resendExpire > 0 && (
+                        <CountdownTimer
+                          seconds={resendExpire}
+                          onComplete={() => {
+                            setResendExpire(0)
+                            setIsResendDisabled(false)
+                          }}
+                        />
+                      )}
                     </Stack>
                   </Stack>
                 </Stack>

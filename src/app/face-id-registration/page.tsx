@@ -32,6 +32,8 @@ export default function Page() {
   const [phoneNumber, setPhoneNumber] = useState<string>('')
   const [otp, setOtp] = useState<string>('')
   const [isOTPExpired, setIsOTPExpired] = useState<boolean>(false)
+  const [resendExpire, setResendExpire] = useState(0)
+  const [isResendDisabled, setIsResendDisabled] = useState<boolean>(false)
   const { setError, error } = useCardIssueError()
 
   const {
@@ -209,6 +211,7 @@ export default function Page() {
                         ) : (
                           <CountdownTimer
                             seconds={Number(expiresIn)}
+                            label="Mã OTP hết hạn sau:"
                             onComplete={() => setIsOTPExpired(true)}
                           />
                         )}
@@ -216,18 +219,35 @@ export default function Page() {
                     ) : (
                       <span />
                     )}
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
                       {otpLoading?.isLoading &&
                         otpLoading?.type === 'resend' && (
                           <CircularProgress size={16} />
                         )}
                       <Link
+                        color={isResendDisabled ? 'textDisabled' : 'primary'}
                         underline="hover"
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => requestOTP(true)}
+                        sx={{
+                          cursor: 'pointer',
+                          pointerEvents: isResendDisabled ? 'none' : 'default',
+                        }}
+                        onClick={() => {
+                          setResendExpire(30)
+                          setIsResendDisabled(true)
+                          requestOTP(true)
+                        }}
                       >
                         Gửi lại mã OTP
                       </Link>
+                      {resendExpire > 0 && (
+                        <CountdownTimer
+                          seconds={resendExpire}
+                          onComplete={() => {
+                            setResendExpire(0)
+                            setIsResendDisabled(false)
+                          }}
+                        />
+                      )}
                     </Stack>
                   </Stack>
                 </Stack>
