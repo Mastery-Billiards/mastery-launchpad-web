@@ -4,7 +4,6 @@ import {
   ComponentsOverrides,
   Theme as MuiTheme,
   ButtonProps,
-  CSSInterpolation,
 } from '@mui/material'
 
 declare module '@mui/material/Button' {
