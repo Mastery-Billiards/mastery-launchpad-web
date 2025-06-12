@@ -58,12 +58,13 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
                 fontWeight={600}
                 fontSize={24}
                 textTransform="uppercase"
+                color="white"
               >
                 {ROUTES_TITLE[pathname]}
               </Typography>
             )}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Stack alignItems="flex-end">
+              <Stack alignItems="flex-end" color="white">
                 <Typography fontSize={14} fontWeight={600} noWrap>
                   {info?.name}
                 </Typography>
