@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import './globals.css'
 import LinearProgress from '@mui/material/LinearProgress'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter'
-import { Open_Sans } from 'next/font/google'
+import { Josefin_Sans } from 'next/font/google'
 import { ThemeProvider } from '@mui/material/styles'
 import theme from '../theme/theme'
 import Layout from '@/app/components/layout/layout'
@@ -13,7 +13,7 @@ import { usePathname } from 'next/navigation'
 import { useUserInfo } from '@/app/stores/auth.store'
 import { USER_AUTHENTICATION_INFO_KEY } from '@/app/constant/local-storage-key'
 
-const openSans = Open_Sans({
+const openSans = Josefin_Sans({
   weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   display: 'swap',

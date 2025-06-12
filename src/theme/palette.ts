@@ -7,7 +7,7 @@ export const colors = {
 }
 
 const primary = {
-  main: '#febd03',
+  main: '#FFBF00',
 }
 
 const createSharedOptions = (mode: ThemeMode): PaletteOptions => ({

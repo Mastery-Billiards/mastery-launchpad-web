@@ -55,10 +55,10 @@ const Layout: FunctionComponent<DefaultLayoutProps> = ({ children }) => {
             />
             {!isMobile && (
               <Typography
-                fontWeight={600}
-                fontSize={24}
+                fontWeight={700}
+                fontSize={28}
                 textTransform="uppercase"
-                color="white"
+                color="primary"
               >
                 {ROUTES_TITLE[pathname]}
               </Typography>

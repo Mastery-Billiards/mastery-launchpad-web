@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const envVars = {
-  HOST: 'https://14.225.206.52:443',
+  HOST: 'http://14.225.206.52:8080',
 }
 
 const nextConfig = {
