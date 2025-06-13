@@ -1,12 +1,10 @@
-'use server'
 import { baseUrl, client } from '@/app/service/client'
 import { Card } from '@/app/service/card/card.entity'
-import { cookies } from 'next/headers'
 import { USER_AUTHENTICATION_TOKEN } from '@/app/constant/cookie-name'
+import { getCookie } from '@/app/utils/cookie'
 
 export const getCard = async (cardCode: string): Promise<Card> => {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(USER_AUTHENTICATION_TOKEN)?.value
+  const token = getCookie(USER_AUTHENTICATION_TOKEN)
   const { data } = await client.get(
     `${baseUrl()}/customers/membership/cards/${cardCode}`,
     {
@@ -22,8 +20,7 @@ export const submitCardIssue = async (
   customerCode: string,
   formData: FormData
 ): Promise<Card> => {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(USER_AUTHENTICATION_TOKEN)?.value
+  const token = getCookie(USER_AUTHENTICATION_TOKEN)
   const { data } = await client.post(
     `${baseUrl()}/customers/${customerCode}/membership/cards/issue`,
     formData,

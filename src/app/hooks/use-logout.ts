@@ -13,6 +13,7 @@ export function useLogout() {
 
   const logout = useCallback(() => {
     setLoading(true)
+    console.log(111)
     logoutService()
       .then(() => {
         removeCookie(USER_AUTHENTICATION_TOKEN)

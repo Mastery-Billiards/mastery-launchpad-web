@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 
 const envVars = {
-  HOST: 'http://14.225.206.52:8080',
+  HOST: 'https://14.225.206.52',
 }
 
 const nextConfig = {
-  output: 'export',
   env: envVars,
   reactStrictMode: true,
   serverRuntimeConfig: {
