@@ -1,18 +1,15 @@
 /** @type {import('next').NextConfig} */
 
 const envVars = {
-  HOST: 'https://14.225.206.52:443',
+  HOST: 'http://14.225.206.52:8080',
 }
 
 const nextConfig = {
+  output: 'export',
   env: envVars,
   reactStrictMode: true,
   serverRuntimeConfig: {
     mySecret: envVars.HOST,
-  },
-  experimental: {
-    serverActions: true,
-    appDir: true,
   },
   images: {
     unoptimized: true,
